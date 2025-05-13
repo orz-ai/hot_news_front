@@ -65,7 +65,6 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
   const [minFrequency, setMinFrequency] = useState(2);
   const [maxWords, setMaxWords] = useState(50);
   const [isMaxWordsOpen, setIsMaxWordsOpen] = useState(false);
-  const [strictChineseOnly, setStrictChineseOnly] = useState(true);
   const [isFrequencySliderOpen, setIsFrequencySliderOpen] = useState(false);
 
   // 检测是否是中文字符的函数，包含更广泛的中文字符范围
@@ -81,6 +80,32 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
       (code >= 0x2b820 && code <= 0x2ceaf) || // CJK扩展E
       (code >= 0x2ceb0 && code <= 0x2ebef)    // CJK扩展F
     );
+  };
+
+  // 验证是否是有效的中文词
+  const isValidChineseWord = (word: string): boolean => {
+    // 长度至少为1
+    if (word.length < 1) return false;
+    
+    // 必须全部是中文字符
+    for (let i = 0; i < word.length; i++) {
+      if (!isChineseChar(word[i])) return false;
+    }
+    
+    // 不能含有任何英文字母、数字或特殊字符
+    if (/[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]/.test(word)) return false;
+    
+    // 不能全部是英文字母 (额外安全检查)
+    if (/^[a-zA-Z]+$/.test(word)) return false;
+    
+    // 检查是否包含英文单词
+    const commonEnglishWords = ['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'that', 'for', 'you', 'was', 'on', 
+                               'with', 'as', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by',
+                               'but', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'how'];
+    
+    if (commonEnglishWords.some(engWord => word.toLowerCase().includes(engWord))) return false;
+    
+    return true;
   };
 
   // Extract words and their frequencies from trending data
@@ -112,13 +137,26 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
       '很', '非常', '就是', '不是', '什么', '如何', '为什么', '可能', '一个', '一种',
       '表示', '称', '看', '让', '说', '称为', '称之为', '称作',
       '啊', '吧', '呢', '吗', '呀', '哦', '啦', '嘛', '呐', '哪', '哇', '喂', '喽',
+      
+      // 扩展更多常见英文单词，确保它们被过滤掉
       'the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'that', 'for', 'you', 'was', 'on',
       'with', 'as', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by',
       'but', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'how', 'has',
       'who', 'will', 'more', 'no', 'would', 'should', 'could', 'if', 'my', 'than', 'first',
       'been', 'do', 'its', 'their', 'not', 'now', 'after', 'other', 'into', 'just', 'an',
-      'are', 'these', 'any', 'about', 'out', 'our', 'up', 'also', 'may', 'some', 'like', 'even'
+      'are', 'these', 'any', 'about', 'out', 'our', 'up', 'also', 'may', 'some', 'like', 'even',
+      'i', 'me', 'he', 'she', 'us', 'her', 'him', 'them', 'get', 'got', 'go', 'went',
+      'come', 'came', 'see', 'saw', 'make', 'made', 'know', 'knew', 'take', 'took',
+      'think', 'thought', 'so', 'only', 'then', 'new', 'use', 'used', 'work', 'way',
+      'day', 'time', 'year', 'good', 'want', 'because', 'people', 'thing', 'things', 'each', 'every',
+      'many', 'few', 'most', 'either', 'neither', 'both', 'while', 'during', 'such',
+      'before', 'after', 'since', 'until', 'through', 'throughout', 'within', 'between', 'among', 'without',
+      'where', 'why', 'which', 'who', 'whose', 'whom', 'what', 'when', 'how',
+      'cannot', 'won', 'not'
     ]);
+
+    // 所有英文单词的集合正则模式 - 确保过滤所有英文单词
+    const englishWordRegex = /^[a-zA-Z]+$/;
 
     // 提取词语并计数
     const wordFrequency: Record<string, number> = {};
@@ -127,80 +165,80 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
       if (!text) return;
       
       // 先过滤掉纯英文内容
-      if (strictChineseOnly && /^[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]+$/.test(text)) return;
+      if (/^[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]+$/.test(text)) return;
       
       // 提取2-4字的中文词组
       for (let i = 0; i < text.length; i++) {
         // 跳过非中文字符
-        if (strictChineseOnly && !isChineseChar(text[i])) continue;
+        if (!isChineseChar(text[i])) continue;
+        
+        // 确保下一个字符也是中文字符才继续处理
+        if (i + 1 < text.length && !isChineseChar(text[i + 1])) continue;
         
         // 提取2字词
         if (i + 1 < text.length) {
           const word = text.substring(i, i + 2);
           // 确保是纯中文词组且不是停用词
-          if (strictChineseOnly) {
-            if (isChineseChar(word[0]) && isChineseChar(word[1]) && !stopWords.has(word)) {
-              wordFrequency[word] = (wordFrequency[word] || 0) + 1;
-            }
-          } else if (!stopWords.has(word)) {
+          if (isChineseChar(word[0]) && isChineseChar(word[1]) && !stopWords.has(word)) {
             wordFrequency[word] = (wordFrequency[word] || 0) + 1;
           }
         }
         
         // 提取3字词
-        if (i + 2 < text.length) {
+        if (i + 2 < text.length && isChineseChar(text[i + 2])) {
           const word = text.substring(i, i + 3);
-          if (strictChineseOnly) {
-            if (isChineseChar(word[0]) && isChineseChar(word[1]) && isChineseChar(word[2]) && !stopWords.has(word)) {
-              wordFrequency[word] = (wordFrequency[word] || 0) + 2; // 给3字词更高权重
-            }
-          } else if (!stopWords.has(word)) {
-            wordFrequency[word] = (wordFrequency[word] || 0) + 2;
+          if (isChineseChar(word[0]) && isChineseChar(word[1]) && isChineseChar(word[2]) && !stopWords.has(word)) {
+            wordFrequency[word] = (wordFrequency[word] || 0) + 2; // 给3字词更高权重
           }
         }
         
         // 提取4字词
-        if (i + 3 < text.length) {
+        if (i + 3 < text.length && isChineseChar(text[i + 3])) {
           const word = text.substring(i, i + 4);
-          if (strictChineseOnly) {
-            if (isChineseChar(word[0]) && isChineseChar(word[1]) && isChineseChar(word[2]) && isChineseChar(word[3]) && !stopWords.has(word)) {
-              wordFrequency[word] = (wordFrequency[word] || 0) + 3; // 给4字词更高权重
-            }
-          } else if (!stopWords.has(word)) {
-            wordFrequency[word] = (wordFrequency[word] || 0) + 3;
+          if (isChineseChar(word[0]) && isChineseChar(word[1]) && isChineseChar(word[2]) && isChineseChar(word[3]) && !stopWords.has(word)) {
+            wordFrequency[word] = (wordFrequency[word] || 0) + 3; // 给4字词更高权重
           }
         }
       }
     });
 
-    // 过滤掉包含英文的词并检查中文字符编码
+    // 强制过滤掉所有英文单词和含英文的词
     const filteredWordFrequency = Object.fromEntries(
       Object.entries(wordFrequency).filter(([word]) => {
-        // 如果不是严格中文模式，允许更宽松的过滤
-        if (!strictChineseOnly) {
-          return !/^\s*$/.test(word) && word.length >= 2; // 只要不是空白且长度至少为2
-        }
-        
-        // 严格中文模式下的过滤
-        // 确保没有英文字母和数字
+        // 确保没有任何英文字母和数字
         if (/[a-zA-Z0-9]/.test(word) || word.trim().length === 0) return false;
+        
+        // 确保不是单个英文单词
+        if (englishWordRegex.test(word)) return false;
         
         // 确保全是中文字符
         for (let i = 0; i < word.length; i++) {
-          const code = word.charCodeAt(i);
-          // 验证是否在常用汉字范围内
-          if (!(code >= 0x4e00 && code <= 0x9fff)) return false;
+          if (!isChineseChar(word[i])) return false;
         }
+        
         return true;
       })
     );
     
-    // 给词长更长的词增加权重
+    // 给词长更长的词增加权重，并给常见关键词增加优先级
     const weightedWordFrequency = Object.fromEntries(
       Object.entries(filteredWordFrequency).map(([word, count]) => {
         // 根据词长增加权重
         const lengthWeight = word.length - 1; // 2字词+1，3字词+2，4字词+3
-        return [word, count + count * lengthWeight * 0.3]; // 增加30%×词长的权重
+        let finalWeight = count + count * lengthWeight * 0.5; // 增加50%×词长的权重
+        
+        // 如果是分类关键词，增加额外权重
+        const isInCategory = CATEGORIES.some(category => 
+          category.keywords.some(keyword => 
+            word.includes(keyword) || keyword.includes(word)
+          )
+        );
+        
+        if (isInCategory) {
+          finalWeight *= 1.2; // 分类词增加20%权重
+        }
+        
+        return [word, finalWeight];
       })
     );
 
@@ -209,6 +247,32 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
       .filter(([_, count]) => count >= minFrequency) // Apply minimum frequency filter
       .sort((a, b) => b[1] - a[1])
       .slice(0, maxWords); // Limit to max words
+
+    // 如果没有找到足够的中文词，则增加显示的单个汉字作为补充
+    if (sortedWords.length < 5) {
+      // 收集单个汉字及频次
+      const singleCharFreq: Record<string, number> = {};
+      
+      allContent.forEach(text => {
+        if (!text) return;
+        
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          if (isChineseChar(char) && !/[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]/.test(char)) {
+            singleCharFreq[char] = (singleCharFreq[char] || 0) + 1;
+          }
+        }
+      });
+      
+      // 添加到结果中
+      const singleChars = Object.entries(singleCharFreq)
+        .filter(([_, count]) => count >= minFrequency)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+      
+      // 合并结果
+      sortedWords.push(...singleChars);
+    }
 
     // Assign categories and colors to words
     return sortedWords.map(([text, value]) => {
@@ -226,12 +290,15 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
         color: matchingCategory?.color || DEFAULT_CATEGORY.color
       };
     });
-  }, [trendingData, selectedPlatforms, minFrequency, maxWords, strictChineseOnly]);
+  }, [trendingData, selectedPlatforms, minFrequency, maxWords]);
 
-  // Filter words by selected category
+  // Filter words by selected category and apply final safety check
   const filteredWords = useMemo(() => {
-    if (!selectedCategory) return wordData;
-    return wordData.filter(word => word.category === selectedCategory);
+    // 应用最终安全过滤，确保只有中文词
+    const safeWords = wordData.filter(word => isValidChineseWord(word.text));
+    
+    if (!selectedCategory) return safeWords;
+    return safeWords.filter(word => word.category === selectedCategory);
   }, [wordData, selectedCategory]);
 
   // Group words by category for the legend
@@ -303,18 +370,6 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
               </button>
             ))}
           </div>
-          
-          {/* 添加中文提取模式切换 */}
-          <button
-            onClick={() => setStrictChineseOnly(!strictChineseOnly)}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
-              strictChineseOnly 
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-            }`}
-          >
-            {strictChineseOnly ? '严格中文模式' : '混合模式'}
-          </button>
           
           {/* 频率阈值滑块 */}
           <div className="relative">

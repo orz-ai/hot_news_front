@@ -39,6 +39,50 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
+// 检测是否是中文字符
+const isChineseChar = (char: string): boolean => {
+  const code = char.charCodeAt(0);
+  return (
+    (code >= 0x4e00 && code <= 0x9fff) || // CJK统一汉字
+    (code >= 0x3400 && code <= 0x4dbf) || // CJK扩展A
+    (code >= 0xf900 && code <= 0xfaff)    // CJK兼容汉字
+  );
+};
+
+// 忽略的常见词
+const COMMON_STOP_WORDS = new Set([
+  '的', '了', '在', '是', '和', '与', '这', '那', '有', '将', '被', '对', '为', '从', '到', '上', '下', '中',
+  '最新', '消息', '热门', '热点', '新闻', '发布', '报道', '揭秘', '曝光', '一个', '什么', '来', '去',
+  '如何', '为什么', '可能', '终于', '突然', '原来', '真的', '官宣', '重磅', '首次', '都', '每',
+  '让', '把', '能', '说', '要', '会', '我', '你', '他', '她', '它', '他们', '她们', '它们',
+  
+  // 常见英文单词作为额外过滤
+  'the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'that', 'for', 'you', 'was', 'on',
+  'with', 'as', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by',
+  'but', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'how', 'has',
+  'who', 'will', 'more', 'no', 'would', 'should', 'could', 'if', 'my', 'than', 'first',
+  'been', 'do', 'its', 'their', 'not', 'now', 'after', 'other', 'into', 'just', 'an'
+]);
+
+// 验证是否是有效的中文词
+const isValidChineseWord = (word: string): boolean => {
+  // 长度至少为2
+  if (word.length < 2) return false;
+  
+  // 必须全部是中文字符
+  for (let i = 0; i < word.length; i++) {
+    if (!isChineseChar(word[i])) return false;
+  }
+  
+  // 不能含有英文字母、数字或特殊字符
+  if (/[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]/.test(word)) return false;
+  
+  // 不能是停用词
+  if (COMMON_STOP_WORDS.has(word)) return false;
+  
+  return true;
+};
+
 // 定义热点主题/分类
 const TOPIC_CATEGORIES = [
   { id: 'tech', name: '科技', color: '#10B981', icon: 'laptop-code', keywords: ['科技', '技术', '创新', '数字', '智能', '研发', 'AI', '人工智能', '算法', '编程'] },
@@ -112,6 +156,20 @@ export default function Home() {
     fetchData();
   }, []);
 
+  // 将数据存储到localStorage以便搜索功能使用
+  useEffect(() => {
+    // 检查数据是否已加载完成
+    if (allDataLoaded && Object.keys(trendingData).length > 0) {
+      try {
+        // 将数据存储到localStorage中
+        localStorage.setItem('trendingData', JSON.stringify(trendingData));
+        console.log('热点数据已保存到localStorage，可用于搜索');
+      } catch (error) {
+        console.error('保存数据到localStorage失败:', error);
+      }
+    }
+  }, [allDataLoaded, trendingData]);
+
   // 获取跨平台热门关键词与主题
   const { hotKeywords, topicDistribution, correlatedTopics } = useMemo(() => {
     if (Object.keys(trendingData).length === 0) {
@@ -134,38 +192,70 @@ export default function Home() {
     // 关键词提取和分类
     const keywords: Record<string, { count: number, score: number, categories: Record<string, number> }> = {};
     
-    // 忽略的常见词
-    const wordsToIgnore = new Set([
-      '的', '了', '在', '是', '和', '与', '这', '那', '有', '将', '被', '对', '为', '从',
-      '最新', '消息', '热门', '热点', '新闻', '发布', '报道', '揭秘', '曝光', '一个', '什么',
-      '如何', '为什么', '可能', '终于', '突然', '原来', '真的', '官宣', '重磅', '首次'
-    ]);
-    
     // 处理所有文本内容
     allContent.forEach(({ text, score }) => {
-      // 简单分词 (实际项目应使用专业分词库)
-      const words = text.split(/[\s\!\.\,\:\;\?\(\)\[\]\{\}\"\'\，\。\！\？\：\；\（\）\【\】\「\」]/);
-      
-      words.forEach(word => {
-        if (word.length >= 2 && !wordsToIgnore.has(word)) {
-          if (!keywords[word]) {
-            keywords[word] = { 
-              count: 0, 
-              score: 0,
-              categories: {} 
-            };
-          }
-          keywords[word].count += 1;
-          keywords[word].score += score;
-          
-          // 识别关键词属于哪个类别
-          TOPIC_CATEGORIES.forEach(category => {
-            if (category.keywords.some(k => word.includes(k) || k.includes(word))) {
-              keywords[word].categories[category.id] = (keywords[word].categories[category.id] || 0) + 1;
+      // 提取2-4字的中文词组
+      for (let i = 0; i < text.length; i++) {
+        // 跳过非中文字符
+        if (!isChineseChar(text[i])) continue;
+        
+        // 提取2字词
+        if (i + 1 < text.length && isChineseChar(text[i + 1])) {
+          const word = text.substring(i, i + 2);
+          if (isValidChineseWord(word)) {
+            if (!keywords[word]) {
+              keywords[word] = { count: 0, score: 0, categories: {} };
             }
-          });
+            keywords[word].count += 1;
+            keywords[word].score += score;
+            
+            // 识别关键词属于哪个类别
+            TOPIC_CATEGORIES.forEach(category => {
+              if (category.keywords.some(k => word.includes(k) || k.includes(word))) {
+                keywords[word].categories[category.id] = (keywords[word].categories[category.id] || 0) + 1;
+              }
+            });
+          }
         }
-      });
+        
+        // 提取3字词
+        if (i + 2 < text.length && isChineseChar(text[i + 1]) && isChineseChar(text[i + 2])) {
+          const word = text.substring(i, i + 3);
+          if (isValidChineseWord(word)) {
+            if (!keywords[word]) {
+              keywords[word] = { count: 0, score: 0, categories: {} };
+            }
+            keywords[word].count += 2; // 给更长的词更高权重
+            keywords[word].score += score * 1.2;
+            
+            // 识别关键词属于哪个类别
+            TOPIC_CATEGORIES.forEach(category => {
+              if (category.keywords.some(k => word.includes(k) || k.includes(word))) {
+                keywords[word].categories[category.id] = (keywords[word].categories[category.id] || 0) + 1;
+              }
+            });
+          }
+        }
+        
+        // 提取4字词
+        if (i + 3 < text.length && isChineseChar(text[i + 1]) && isChineseChar(text[i + 2]) && isChineseChar(text[i + 3])) {
+          const word = text.substring(i, i + 4);
+          if (isValidChineseWord(word)) {
+            if (!keywords[word]) {
+              keywords[word] = { count: 0, score: 0, categories: {} };
+            }
+            keywords[word].count += 3; // 给更长的词更高权重
+            keywords[word].score += score * 1.5;
+            
+            // 识别关键词属于哪个类别
+            TOPIC_CATEGORIES.forEach(category => {
+              if (category.keywords.some(k => word.includes(k) || k.includes(word))) {
+                keywords[word].categories[category.id] = (keywords[word].categories[category.id] || 0) + 1;
+              }
+            });
+          }
+        }
+      }
     });
     
     // 计算每个关键词的主要类别
@@ -225,12 +315,34 @@ export default function Home() {
     // 寻找相关联的主题词组
     const correlatedTopics: Array<{topics: string[], count: number, strength: number}> = [];
     
-    // 简单实现：查找经常一起出现的关键词对
+    // 从所有标题中提取中文词组
     const titleWords = Object.values(trendingData).flat().map(item => {
-      const words = (item.title || '').split(/[\s\!\.\,\:\;\?\(\)\[\]\{\}\"\'\，\。\！\？\：\；\（\）\【\】\「\」]/)
-        .filter(w => w.length >= 2 && !wordsToIgnore.has(w));
+      // 从标题中提取中文词组
+      const words: string[] = [];
+      const title = item.title || '';
+      
+      for (let i = 0; i < title.length; i++) {
+        if (!isChineseChar(title[i])) continue;
+        
+        // 提取2字中文词
+        if (i + 1 < title.length && isChineseChar(title[i + 1])) {
+          const word = title.substring(i, i + 2);
+          if (isValidChineseWord(word) && !COMMON_STOP_WORDS.has(word)) {
+            words.push(word);
+          }
+        }
+        
+        // 提取3字中文词
+        if (i + 2 < title.length && isChineseChar(title[i + 1]) && isChineseChar(title[i + 2])) {
+          const word = title.substring(i, i + 3);
+          if (isValidChineseWord(word) && !COMMON_STOP_WORDS.has(word)) {
+            words.push(word);
+          }
+        }
+      }
+      
       return words;
-    });
+    }).filter(words => words.length > 0); // 过滤掉没有有效中文词的标题
     
     // 查找共现词对
     const coOccurrences: Record<string, {count: number, words: string[]}> = {};
@@ -642,37 +754,78 @@ export default function Home() {
                   </div>
                   
                   <div className="p-6">
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-4 justify-center">
                       {hotKeywords
-                        .filter(k => selectedCategory === 'all' || k.category === selectedCategory)
+                        .filter(k => {
+                          // 额外过滤确保只显示中文关键词
+                          for (let i = 0; i < k.keyword.length; i++) {
+                            if (!isChineseChar(k.keyword[i])) return false;
+                          }
+                          // 检查是否包含任何英文字符或数字
+                          if (/[a-zA-Z0-9]/.test(k.keyword)) return false;
+                          return selectedCategory === 'all' || k.category === selectedCategory;
+                        })
                         .map((item) => {
                           const category = TOPIC_CATEGORIES.find(c => c.id === item.category);
-                          const fontSize = Math.min(100 + (item.count * 5), 160); // 根据出现次数调整大小
+                          // 基于计数计算大小和不透明度
+                          const maxCount = Math.max(...hotKeywords.map(k => k.count));
+                          const minSize = 16; // 最小字体大小
+                          const maxSize = 32; // 最大字体大小
+                          const fontSize = minSize + ((item.count / maxCount) * (maxSize - minSize));
+                          const opacity = 0.7 + ((item.count / maxCount) * 0.3); // 0.7-1.0范围
                           
                           return (
-                            <div 
-                              key={item.keyword} 
-                              className="px-4 py-2 rounded-lg hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                              style={{
-                                backgroundColor: `${category?.color}15`,
-                                borderLeft: `3px solid ${category?.color}`
+                            <motion.div 
+                              key={item.keyword}
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ 
+                                scale: 1, 
+                                opacity: 1,
+                                rotate: Math.random() * 6 - 3 // 随机旋转 -3 到 3 度
                               }}
+                              whileHover={{ 
+                                scale: 1.1, 
+                                rotate: 0,
+                                transition: { duration: 0.2 }
+                              }}
+                              className="relative cursor-pointer group"
                             >
-                              <div className="flex items-center gap-1.5">
-                                <span 
-                                  className="font-medium" 
-                                  style={{ 
-                                    color: category?.color,
-                                    fontSize: `${fontSize}%`
+                              <div 
+                                className="relative z-10 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                                style={{
+                                  backgroundColor: `${category?.color}${Math.round(opacity * 25).toString(16)}`, // 使用十六进制设置透明度
+                                  border: `1px solid ${category?.color}${Math.round(opacity * 50).toString(16)}`,
+                                  transform: "translateZ(0)" // 启用硬件加速
+                                }}
+                              >
+                                <div className="text-center">
+                                  <span 
+                                    className="font-medium"
+                                    style={{
+                                      fontSize: `${fontSize}px`,
+                                      color: category?.color,
+                                      textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+                                    }}
+                                  >
+                                    {item.keyword}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {/* 悬停时显示的计数气泡 */}
+                              <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                <div 
+                                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                                  style={{
+                                    backgroundColor: category?.color,
+                                    color: 'white',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                   }}
                                 >
-                                  {item.keyword}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
                                   {item.count}
-                                </span>
+                                </div>
                               </div>
-                            </div>
+                            </motion.div>
                           );
                         })}
                     </div>

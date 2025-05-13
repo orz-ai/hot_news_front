@@ -2,13 +2,26 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect, useRef, useContext } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { TrendingItem } from '../types';
+import { PLATFORMS } from '../constants/platforms';
+
+// 全局热点数据上下文类型
+interface GlobalDataContextProps {
+  trendingData: Record<string, TrendingItem[]>;
+  isLoaded: boolean;
+}
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<TrendingItem[]>([]);
+  const searchRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
   
   // 检测滚动以改变header样式
   useEffect(() => {
@@ -19,6 +32,72 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // 处理搜索结果的点击外部关闭
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // 从localStorage获取热点数据进行搜索
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    // 尝试从localStorage获取热点数据
+    try {
+      const cachedTrendingData = localStorage.getItem('trendingData');
+      if (!cachedTrendingData) {
+        return;
+      }
+
+      const trendingData: Record<string, TrendingItem[]> = JSON.parse(cachedTrendingData);
+      
+      // 从所有平台的热点数据中搜索匹配的项目
+      const allItems = Object.values(trendingData).flat();
+      
+      // 根据标题和描述进行搜索
+      const results = allItems.filter(item => {
+        const titleMatch = item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const descMatch = item.desc && item.desc.toLowerCase().includes(searchQuery.toLowerCase());
+        return titleMatch || descMatch;
+      });
+      
+      // 限制结果数量并按热度排序
+      setSearchResults(
+        results
+          .sort((a, b) => {
+            const scoreA = parseInt(a.score || '0') || 0;
+            const scoreB = parseInt(b.score || '0') || 0;
+            return scoreB - scoreA;
+          })
+          .slice(0, 8)
+      );
+    } catch (error) {
+      console.error('Error searching cached trending data:', error);
+      // 如果无法从缓存获取数据，使用默认搜索结果
+      if (searchQuery.trim()) {
+        setSearchResults([
+          {
+            title: `没有找到与"${searchQuery}"相关的热点`,
+            url: '#',
+            score: '0',
+            desc: '可能还没有相关的热点内容或数据正在加载中'
+          }
+        ]);
+      }
+    }
+  }, [searchQuery]);
 
   // 移动菜单动画变体
   const menuVariants = {
@@ -72,8 +151,27 @@ export default function Header() {
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-2">
         <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
       </svg>
+    ) },
+    { href: '/user', label: '用户中心', icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-2">
+        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+      </svg>
     ) }
   ];
+
+  // 处理搜索输入变化
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // 处理搜索结果点击
+  const handleResultClick = (item: TrendingItem) => {
+    if (item.url) {
+      window.open(item.url, '_blank');
+    }
+    setSearchFocused(false);
+    setSearchQuery('');
+  };
 
   return (
     <header 
@@ -84,14 +182,14 @@ export default function Header() {
       } border-b border-gray-100 dark:border-gray-800`}
     >
       <div className="container mx-auto px-4 md:px-5 py-3 md:py-4">
-        {/* 桌面布局 - 网格布局 */}
-        <div className="hidden md:grid md:grid-cols-3 items-center">
+        {/* 桌面布局 */}
+        <div className="flex items-center justify-between">
           {/* 左侧 Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="col-span-1"
+            className="flex-shrink-0 mr-4"
           >
             <Link href="/" className="flex items-center gap-3 group">
               <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white p-3 rounded-2xl shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/30 transition-all duration-300 transform group-hover:scale-105 group-hover:translate-y-[-2px]">
@@ -106,12 +204,12 @@ export default function Header() {
             </Link>
           </motion.div>
 
-          {/* 中间导航 */}
+          {/* 中间导航 - 桌面端显示 */}
           <motion.nav
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="flex justify-center col-span-1"
+            className="hidden md:flex justify-center mx-auto"
           >
             <NavMenu navItems={navItems} pathname={pathname} />
           </motion.nav>
@@ -121,138 +219,341 @@ export default function Header() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="flex items-center justify-end gap-3 col-span-1"
+            className="flex items-center justify-end gap-3 flex-shrink-0 ml-auto"
           >
-            {/* GitHub链接 */}
-            <a
-              href="https://github.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-3 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 bg-gray-50 dark:bg-gray-800/60 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 border border-gray-100 dark:border-gray-700/50 group"
-              aria-label="GitHub"
+            {/* 搜索框 */}
+            <div ref={searchRef} className="relative">
+              <motion.div 
+                animate={{ 
+                  width: searchFocused ? "300px" : "200px"
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 30 
+                }}
+                className="group"
+              >
+                <div className="relative flex items-center">
+                  <input 
+                    type="text" 
+                    placeholder="搜索热点内容..." 
+                    className="w-full py-2 pl-4 pr-10 bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 dark:focus:ring-primary-400/50 text-gray-700 dark:text-gray-200 transition-all duration-300 focus:bg-white dark:focus:bg-gray-800"
+                    onFocus={() => setSearchFocused(true)}
+                    onChange={handleSearchChange}
+                    value={searchQuery}
+                  />
+                  <div className="absolute right-3 text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* 搜索结果下拉菜单 */}
+                {searchFocused && searchResults.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute left-0 right-0 mt-2 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-50 max-h-[70vh] overflow-y-auto custom-scrollbar"
+                  >
+                    <div className="px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                      搜索结果 ({searchResults.length})
+                    </div>
+                    {searchResults.map((result, index) => {
+                      // 查找结果所属的平台
+                      let platformCode = '';
+                      // 检查localStorage中是否有记录这个结果的平台
+                      try {
+                        const cachedTrendingData = localStorage.getItem('trendingData');
+                        if (cachedTrendingData) {
+                          const trendingData = JSON.parse(cachedTrendingData);
+                          // 找到包含此结果的平台
+                          for (const [code, items] of Object.entries(trendingData)) {
+                            if (Array.isArray(items) && items.some(item => item.title === result.title)) {
+                              platformCode = code;
+                              break;
+                            }
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error finding platform for search result:', error);
+                      }
+                      
+                      // 获取平台信息
+                      const platform = PLATFORMS.find(p => p.code === platformCode);
+                      
+                      // 查找该结果在平台中的排名
+                      let ranking = -1;
+                      try {
+                        const cachedTrendingData = localStorage.getItem('trendingData');
+                        if (cachedTrendingData && platformCode) {
+                          const trendingData = JSON.parse(cachedTrendingData);
+                          const platformItems = trendingData[platformCode];
+                          if (Array.isArray(platformItems)) {
+                            const index = platformItems.findIndex(item => item.title === result.title);
+                            if (index !== -1) {
+                              ranking = index + 1; // 排名从1开始
+                            }
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error finding ranking for search result:', error);
+                      }
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 group transition-colors duration-150 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                          onClick={() => handleResultClick(result)}
+                        >
+                          <div className="flex items-start gap-3">
+                            {platformCode && platform && (
+                              <div 
+                                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5 relative"
+                                style={{
+                                  backgroundColor: `${platform.color}20`, // 使用平台颜色作为背景，降低透明度
+                                  color: platform.color,
+                                  border: `1px solid ${platform.color}40`
+                                }}
+                              >
+                                <span className="text-xs font-bold">{platform.name.substring(0, 2)}</span>
+                                {ranking > 0 && (
+                                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-600 shadow-sm">
+                                    <span className="text-[9px] font-bold text-gray-700 dark:text-gray-300">{ranking}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <div className="flex-grow">
+                              <p className="text-sm font-medium group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-1 mb-1">
+                                {result.title}
+                              </p>
+                              <div className="flex flex-wrap gap-1.5 items-center mb-1">
+                                {platformCode && platform && (
+                                  <span 
+                                    className="text-[10px] px-1.5 py-0.5 rounded-sm"
+                                    style={{
+                                      backgroundColor: `${platform.color}15`,
+                                      color: platform.color,
+                                      border: `1px solid ${platform.color}30`
+                                    }}
+                                  >
+                                    {platform.name}{ranking > 0 && <span className="ml-1 opacity-90">#{ranking}</span>}
+                                  </span>
+                                )}
+                                {platform?.contentType?.slice(0, 2).map((type, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-[10px] px-1.5 py-0.5 rounded-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                                  >
+                                    {type}
+                                  </span>
+                                ))}
+                                {result.score && parseInt(result.score) > 0 && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 ml-auto">
+                                    热度 {result.score}
+                                  </span>
+                                )}
+                              </div>
+                              {result.desc && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                  {result.desc}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </motion.div>
+            </div>
+            
+            {/* 用户中心图标 */}
+            <Link 
+              href="/user"
+              className="p-3 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 bg-gray-50 dark:bg-gray-800/60 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 border border-gray-100 dark:border-gray-700/50 hover:shadow-md group"
+              aria-label="用户中心"
             >
-              <svg className="h-5 w-5 transform transition-transform duration-300 group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 transform transition-transform duration-300 group-hover:scale-110">
+                <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
               </svg>
-            </a>
-          </motion.div>
-        </div>
-
-        {/* 移动端布局 - Flex布局 */}
-        <div className="flex md:hidden items-center justify-between">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white p-2 rounded-xl shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/30 transition-all duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                </svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">热点速览</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">一站式热门内容聚合平台</span>
-              </div>
             </Link>
           </motion.div>
-
-          {/* 移动端功能区 */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="flex items-center gap-2"
-          >
-            {/* GitHub链接 */}
-            <a
-              href="https://github.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 bg-gray-50 dark:bg-gray-800/60 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/70 border border-gray-100 dark:border-gray-700/50 group"
-              aria-label="GitHub"
-            >
-              <svg className="h-5 w-5 transform transition-transform duration-300 group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-              </svg>
-            </a>
-            
-            {/* 移动端菜单按钮 */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 bg-gray-50 dark:bg-gray-800/60 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/70 border border-gray-100 dark:border-gray-700/50"
-              aria-label="菜单"
-              aria-expanded={isMobileMenuOpen}
-            >
-              <motion.div
-                animate={isMobileMenuOpen ? "open" : "closed"}
-                variants={{
-                  open: { rotate: 180 },
-                  closed: { rotate: 0 }
-                }}
-                transition={{ duration: 0.3 }}
-                className="w-5 h-5 relative"
-              >
-                <motion.span
-                  className="absolute top-2 left-0 w-5 h-0.5 bg-current rounded-full"
-                  variants={{
-                    open: { rotate: 45, translateY: 0 },
-                    closed: { rotate: 0, translateY: 0 }
-                  }}
-                  transition={{ duration: 0.3 }}
-                ></motion.span>
-                <motion.span
-                  className="absolute top-0 bottom-0 left-0 my-auto w-5 h-0.5 bg-current rounded-full"
-                  variants={{
-                    open: { opacity: 0 },
-                    closed: { opacity: 1 }
-                  }}
-                  transition={{ duration: 0.3 }}
-                ></motion.span>
-                <motion.span
-                  className="absolute bottom-2 left-0 w-5 h-0.5 bg-current rounded-full"
-                  variants={{
-                    open: { rotate: -45, translateY: 0 },
-                    closed: { rotate: 0, translateY: 0 }
-                  }}
-                  transition={{ duration: 0.3 }}
-                ></motion.span>
-              </motion.div>
-            </button>
-          </motion.div>
         </div>
-      </div>
 
-      {/* 移动端菜单 */}
-      <motion.div 
-        className="md:hidden overflow-hidden"
-        animate={isMobileMenuOpen ? "open" : "closed"}
-        variants={menuVariants}
-        initial="closed"
-      >
-        <div className="container mx-auto px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-2 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50 shadow-inner">
-            {navItems.map((item) => (
-              <motion.div key={item.href} variants={itemVariants} className="mb-2 last:mb-0">
+        {/* 移动端布局 - 仅移动端显示 */}
+        <div className="flex md:hidden items-center justify-between mt-4">
+          {/* 中央导航菜单 - 移动端 */}
+          <motion.nav
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="flex justify-center w-full"
+          >
+            <div className="flex space-x-2 overflow-x-auto pb-1 w-full justify-between">
+              {navItems.map((item) => (
                 <Link 
+                  key={item.href}
                   href={item.href} 
-                  className={`flex items-center py-2.5 px-3 rounded-lg font-medium transition-all duration-300 ${
+                  className={`flex items-center py-2 px-3 rounded-lg text-sm font-medium transition-all duration-300 flex-shrink-0 ${
                     pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
                       ? 'bg-gradient-to-r from-primary-500/10 to-primary-600/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 dark:border-primary-400/20'
                       : 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-700/50 border border-transparent hover:border-gray-200 dark:hover:border-gray-700'
                   }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.icon}
-                  {item.label}
+                  <span className="whitespace-nowrap">{item.label}</span>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </motion.nav>
         </div>
-      </motion.div>
+      </div>
+
+      {/* 移动端搜索框 */}
+      <div className="md:hidden px-4 pb-3">
+        <div ref={searchRef} className="relative w-full">
+          <motion.div className="relative flex items-center">
+            <input 
+              type="text" 
+              placeholder="搜索热点内容..." 
+              className="w-full py-2.5 pl-4 pr-10 bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 dark:focus:ring-primary-400/50 text-gray-700 dark:text-gray-200 transition-all duration-300 focus:bg-white dark:focus:bg-gray-800"
+              onFocus={() => setSearchFocused(true)}
+              onChange={handleSearchChange}
+              value={searchQuery}
+            />
+            <div className="absolute right-3 text-gray-400 dark:text-gray-500 transition-colors duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </motion.div>
+          
+          {/* 搜索结果下拉菜单 - 移动端 */}
+          {searchFocused && searchResults.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute left-0 right-0 mt-2 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-50 max-h-[60vh] overflow-y-auto custom-scrollbar"
+            >
+              <div className="px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                搜索结果 ({searchResults.length})
+              </div>
+              {searchResults.map((result, index) => {
+                // 查找结果所属的平台
+                let platformCode = '';
+                // 检查localStorage中是否有记录这个结果的平台
+                try {
+                  const cachedTrendingData = localStorage.getItem('trendingData');
+                  if (cachedTrendingData) {
+                    const trendingData = JSON.parse(cachedTrendingData);
+                    // 找到包含此结果的平台
+                    for (const [code, items] of Object.entries(trendingData)) {
+                      if (Array.isArray(items) && items.some(item => item.title === result.title)) {
+                        platformCode = code;
+                        break;
+                      }
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error finding platform for search result:', error);
+                }
+                
+                // 获取平台信息
+                const platform = PLATFORMS.find(p => p.code === platformCode);
+                
+                // 查找该结果在平台中的排名
+                let ranking = -1;
+                try {
+                  const cachedTrendingData = localStorage.getItem('trendingData');
+                  if (cachedTrendingData && platformCode) {
+                    const trendingData = JSON.parse(cachedTrendingData);
+                    const platformItems = trendingData[platformCode];
+                    if (Array.isArray(platformItems)) {
+                      const index = platformItems.findIndex(item => item.title === result.title);
+                      if (index !== -1) {
+                        ranking = index + 1; // 排名从1开始
+                      }
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error finding ranking for search result:', error);
+                }
+                
+                return (
+                  <div 
+                    key={index} 
+                    className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 group transition-colors duration-150 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                    onClick={() => handleResultClick(result)}
+                  >
+                    <div className="flex items-start gap-3">
+                      {platformCode && platform && (
+                        <div 
+                          className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5 relative"
+                          style={{
+                            backgroundColor: `${platform.color}20`, // 使用平台颜色作为背景，降低透明度
+                            color: platform.color,
+                            border: `1px solid ${platform.color}40`
+                          }}
+                        >
+                          <span className="text-xs font-bold">{platform.name.substring(0, 2)}</span>
+                          {ranking > 0 && (
+                            <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-600 shadow-sm">
+                              <span className="text-[9px] font-bold text-gray-700 dark:text-gray-300">{ranking}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex-grow">
+                        <p className="text-sm font-medium group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-1 mb-1">
+                          {result.title}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 items-center mb-1">
+                          {platformCode && platform && (
+                            <span 
+                              className="text-[10px] px-1.5 py-0.5 rounded-sm"
+                              style={{
+                                backgroundColor: `${platform.color}15`,
+                                color: platform.color,
+                                border: `1px solid ${platform.color}30`
+                              }}
+                            >
+                              {platform.name}{ranking > 0 && <span className="ml-1 opacity-90">#{ranking}</span>}
+                            </span>
+                          )}
+                          {platform?.contentType?.slice(0, 2).map((type, idx) => (
+                            <span
+                              key={idx}
+                              className="text-[10px] px-1.5 py-0.5 rounded-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                            >
+                              {type}
+                            </span>
+                          ))}
+                          {result.score && parseInt(result.score) > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 ml-auto">
+                              热度 {result.score}
+                            </span>
+                          )}
+                        </div>
+                        {result.desc && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                            {result.desc}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </div>
+      </div>
     </header>
   );
 }
