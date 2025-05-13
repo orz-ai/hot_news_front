@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 热点速览 - 全网热点聚合平台
 
-## Getting Started
+热点速览是一个使用 Next.js, TypeScript, Tailwind CSS 和 Framer Motion 构建的现代化热点内容聚合平台。它汇聚了来自 17 个主流平台的热门内容，包括社交媒体、新闻资讯、技术社区、视频平台等多种类型，让用户能够快速了解全网热点。
 
-First, run the development server:
+## 主要特性
+
+- **多平台支持**：支持 17 个主流平台，包括百度、微博、知乎、B站等
+- **实时更新**：每 30 分钟自动更新所有平台的热点数据
+- **响应式设计**：完美适配桌面端和移动端
+- **丰富动效**：使用 Framer Motion 提供流畅的页面过渡和动画效果
+- **暗色模式**：支持明暗主题切换，保护眼睛健康
+- **性能优化**：使用 Next.js 的最佳实践，确保页面加载速度和性能
+
+## 支持的平台
+
+| 平台代码 | 平台名称 | 内容类型 |
+|----------|----------|----------|
+| baidu | 百度热搜 | 社会热点、娱乐、事件 |
+| weibo | 微博热搜 | 社交媒体热点、娱乐、事件 |
+| zhihu | 知乎热榜 | 问答、深度内容、社会热点 |
+| bilibili | 哔哩哔哩 | 视频、动漫、游戏、生活 |
+| douyin | 抖音 | 短视频热点、娱乐 |
+| github | GitHub Trending | 开源项目、编程语言 |
+| ... | 以及更多平台 | ... |
+
+## 技术栈
+
+- [Next.js](https://nextjs.org/) - React 框架，提供服务端渲染和静态生成
+- [TypeScript](https://www.typescriptlang.org/) - 类型安全的 JavaScript 超集
+- [Tailwind CSS](https://tailwindcss.com/) - 实用性优先的 CSS 框架
+- [Framer Motion](https://www.framer.com/motion/) - 强大的动画库
+- [Axios](https://axios-http.com/) - 基于 Promise 的 HTTP 客户端
+- [Headless UI](https://headlessui.dev/) - 无样式的 UI 组件库
+
+## 快速开始
+
+1. 克隆仓库
+
+```bash
+git clone https://github.com/yourusername/mixtools-ui.git
+cd mixtools-ui
+```
+
+2. 安装依赖
+
+```bash
+npm install
+# 或
+yarn install
+```
+
+3. 启动开发服务器
 
 ```bash
 npm run dev
-# or
+# 或
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. 在浏览器中打开 [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API 使用
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+热点速览还提供了 API 服务，允许开发者获取各平台的热点数据。
 
-## Learn More
+```shell
+GET https://orz.ai/api/v1/dailynews/?platform=baidu
+```
 
-To learn more about Next.js, take a look at the following resources:
+详细的 API 文档请参考[此处](#)。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 贡献指南
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+欢迎提交 Pull Request 和 Issue。
 
-## Deploy on Vercel
+## 许可证
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
