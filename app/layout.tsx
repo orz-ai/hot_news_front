@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "热点速览 - 全网热门内容聚合平台",
   description: "汇聚各大平台热门内容，让您一站式了解全网热点。包括百度、微博、知乎、B站等17个平台的热榜内容。",
   keywords: "热点,热搜,热榜,百度热搜,微博热搜,知乎热榜,B站热门,新闻聚合",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body
         className={`${inter.variable} ${robotoMono.variable} antialiased min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100`}
       >
