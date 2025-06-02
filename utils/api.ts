@@ -298,4 +298,71 @@ export async function fetchAllPlatformsData(date?: string): Promise<AllPlatforms
       msg: "Failed to fetch all platforms data"
     };
   }
+}
+
+/**
+ * Keyword cloud response interface
+ */
+export interface KeywordCloudResponse {
+  status: string;
+  date: string;
+  analysis_type: string;
+  keyword_clouds: {
+    all: Array<{
+      text: string;
+      weight: number;
+    }>;
+    [category: string]: Array<{
+      text: string;
+      weight: number;
+    }>;
+  };
+  msg?: string;
+}
+
+/**
+ * Fetches keyword cloud data for visualization
+ * @param options - Options for fetching keyword cloud data
+ * @param options.category - Optional category to filter keywords
+ * @param options.date - Optional date in YYYY-MM-DD format
+ * @param options.refresh - Whether to refresh the cache
+ * @param options.platforms - Optional comma-separated list of platforms
+ * @param options.keyword_count - Number of keywords to return (default: 200)
+ * @returns A promise that resolves to the keyword cloud data
+ */
+export async function fetchKeywordCloud(options: {
+  category?: string;
+  date?: string;
+  refresh?: boolean;
+  platforms?: string;
+  keyword_count?: number;
+} = {}): Promise<KeywordCloudResponse> {
+  try {
+    const { category, date, refresh, platforms, keyword_count } = options;
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (category) params.append('category', category);
+    if (date) params.append('date', date);
+    if (refresh) params.append('refresh', 'true');
+    if (platforms) params.append('platforms', platforms);
+    if (keyword_count) params.append('keyword_count', keyword_count.toString());
+    
+    const queryString = params.toString();
+    const url = `${API_BASE_URL.replace('dailynews', 'analysis/keyword-cloud')}${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get<KeywordCloudResponse>(url);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching keyword cloud data:`, error);
+    return {
+      status: 'error',
+      date: new Date().toISOString().slice(0, 10),
+      analysis_type: 'keyword_cloud',
+      keyword_clouds: {
+        all: []
+      },
+      msg: error instanceof Error ? error.message : 'An unknown error occurred'
+    };
+  }
 } 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { PLATFORMS } from "../constants/platforms";
 import PlatformCard from "../components/PlatformCard";
@@ -102,6 +102,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [timeRange, setTimeRange] = useState('24h');
   const [analysisView, setAnalysisView] = useState('topics');
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // 分析数据状态
   const [analysisData, setAnalysisData] = useState<{
@@ -850,6 +851,30 @@ export default function Home() {
     </div>
   );
 
+  // 监听滚动显示回到顶部按钮
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 500) {
+        setShowBackToTop(true);
+      } else {
+        setShowBackToTop(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // 回到顶部功能
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -925,8 +950,29 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* 关键词云图 */}
+      <section className="mb-24">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">关键词云图</h2>
+        </div>
+        
+        {allDataLoaded ? (
+          <WordCloudVisualization 
+            trendingData={trendingData}
+          />
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-12 flex flex-col items-center justify-center border border-gray-100 dark:border-gray-700">
+            <LoadingSpinner size="lg" className="mb-4" />
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">正在生成关键词云图</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              正在从{ALL_PLATFORMS.length}个平台获取数据并生成词云...
+            </p>
+          </div>
+        )}
+      </section>
+
       {/* 热点聚合分析 */}
-      <section className="mb-16">
+      <section className="mb-24">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">热点聚合分析</h2>
           
@@ -967,29 +1013,6 @@ export default function Home() {
                       >
                   平台对比
                       </button>
-                      <button 
-                  onClick={() => setAnalysisView('crossplatform')}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-1 ${
-                    analysisView === 'crossplatform' 
-                      ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400' 
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  跨平台热点
-                  <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full">
-                    新
-                  </span>
-                </button>
-                <button
-                  onClick={() => setAnalysisView('wordcloud')}
-                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                    analysisView === 'wordcloud' 
-                      ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400' 
-                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
-                  关键词云图
-                </button>
                 <button
                   onClick={() => setAnalysisView('visualization')}
                   className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
@@ -1057,16 +1080,6 @@ export default function Home() {
               </div>
             )}
             
-            {/* 跨平台热点视图 */}
-            {analysisView === 'crossplatform' && renderCrossPlatformTopics()}
-            
-            {/* 词云可视化 */}
-            {analysisView === 'wordcloud' && (
-              <WordCloudVisualization 
-                    trendingData={trendingData}
-                  />
-                )}
-            
             {/* 数据可视化 */}
             {analysisView === 'visualization' && (
               <div className="space-y-6">
@@ -1113,6 +1126,57 @@ export default function Home() {
           </div>
         )}
       </section>
+      
+      {/* 跨平台热点 */}
+      <section className="mb-24">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+            跨平台热点
+            <span className="ml-2 text-xs px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full">
+              热门
+            </span>
+          </h2>
+        </div>
+        
+        {allDataLoaded ? (
+          renderCrossPlatformTopics()
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-12 flex flex-col items-center justify-center border border-gray-100 dark:border-gray-700">
+            <LoadingSpinner size="lg" className="mb-4" />
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">正在分析跨平台热点</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              我们正在对多个平台的热点数据进行交叉分析，请稍候...
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* 回到顶部按钮 */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+              duration: 0.3 
+            }}
+            onClick={scrollToTop}
+            className="fixed right-8 bottom-8 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg hover:shadow-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+            aria-label="回到顶部"
+            style={{
+              boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)"
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
     </>
   );
 }
