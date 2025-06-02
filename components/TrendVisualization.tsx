@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { PlatformType, TrendingItem } from '../types';
+import { PlatformType, TrendingItem, PlatformComparisonResponse, PlatformRanking } from '../types';
 import { PLATFORMS } from '../constants/platforms';
+import { fetchPlatformComparisonData } from '../utils/api';
+import LoadingSpinner from './LoadingSpinner';
 
 interface TrendVisualizationProps {
   trendingData: Record<PlatformType, TrendingItem[]>;
@@ -15,6 +17,13 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>([]);
   const [maxItems, setMaxItems] = useState(10);
   const [isMaxItemsOpen, setIsMaxItemsOpen] = useState(false);
+  const [platformComparisonData, setPlatformComparisonData] = useState<{
+    platformRankings: PlatformRanking[],
+    isLoading: boolean
+  }>({
+    platformRankings: [],
+    isLoading: true
+  });
 
   // Initialize with top 5 platforms by data volume
   useEffect(() => {
@@ -32,6 +41,31 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
     }
   }, [trendingData]);
 
+  // Fetch platform comparison data
+  useEffect(() => {
+    const getPlatformComparisonData = async () => {
+      try {
+        const response = await fetchPlatformComparisonData();
+        if (response.status === 'success') {
+          setPlatformComparisonData({
+            platformRankings: response.platform_rankings,
+            isLoading: false
+          });
+        } else {
+          console.error('Failed to fetch platform comparison data:', response.msg);
+          setPlatformComparisonData(prev => ({ ...prev, isLoading: false }));
+        }
+      } catch (error) {
+        console.error('Error fetching platform comparison data:', error);
+        setPlatformComparisonData(prev => ({ ...prev, isLoading: false }));
+      }
+    };
+
+    if (Object.keys(trendingData).length > 0) {
+      getPlatformComparisonData();
+    }
+  }, [trendingData]);
+
   // Toggle platform selection
   const togglePlatform = (platform: PlatformType) => {
     setSelectedPlatforms(prev => 
@@ -43,6 +77,28 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
 
   // Calculate platform metrics
   const platformMetrics = useMemo(() => {
+    // If we have API data, use that for platform metrics
+    if (!platformComparisonData.isLoading && platformComparisonData.platformRankings.length > 0) {
+      return platformComparisonData.platformRankings.map(ranking => {
+        const platformInfo = PLATFORMS.find(p => p.code === ranking.platform);
+        
+        return {
+          platform: ranking.platform as PlatformType,
+          name: platformInfo?.name || ranking.platform,
+          color: platformInfo?.color || '#3b76ea',
+          itemCount: ranking.total_items,
+          totalHeat: ranking.total_score,
+          avgHeat: ranking.avg_score,
+          peakHour: ranking.peak_hour || Math.floor(Math.random() * 24),
+          categories: platformInfo?.contentType || [],
+          avgTitleLength: ranking.avg_title_length,
+          trend: ranking.trend
+        };
+      }).filter(metric => metric.itemCount > 0)
+        .sort((a, b) => b.totalHeat - a.totalHeat);
+    }
+    
+    // Fallback to calculating from trending data if API data isn't available
     return Object.entries(trendingData)
       .map(([platform, items]) => {
         const platformInfo = PLATFORMS.find(p => p.code === platform);
@@ -67,12 +123,15 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
           totalHeat,
           avgHeat,
           peakHour,
-          categories
+          categories,
+          avgTitleLength: items.length > 0 ? 
+            Math.round(items.reduce((sum, item) => sum + (item.title?.length || 0), 0) / items.length) : 0,
+          trend: 0 // Default trend for fallback calculation
         };
       })
       .filter(metric => metric.itemCount > 0)
       .sort((a, b) => b.totalHeat - a.totalHeat);
-  }, [trendingData]);
+  }, [trendingData, platformComparisonData]);
 
   // Render heatmap view showing topic intensity across platforms
   const renderHeatmap = () => {
@@ -215,6 +274,14 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
 
   // Render platform comparison view
   const renderComparison = () => {
+    if (platformComparisonData.isLoading) {
+      return (
+        <div className="mt-6 flex justify-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
+      );
+    }
+    
     const metrics = platformMetrics.filter(m => 
       selectedPlatforms.includes(m.platform)
     );
@@ -223,6 +290,7 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
     const maxHeat = Math.max(...metrics.map(m => m.totalHeat));
     const maxAvgHeat = Math.max(...metrics.map(m => m.avgHeat));
     const maxItems = Math.max(...metrics.map(m => m.itemCount));
+    const maxTitleLength = Math.max(...metrics.map(m => m.avgTitleLength || 0));
     
     return (
       <div className="mt-6">
@@ -240,9 +308,22 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
                     <span className="text-sm font-medium" style={{ color: metric.color }}>
                       {metric.name}
                     </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {formatNumber(metric.totalHeat.toString())}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className={`text-xs px-2 py-0.5 rounded-full flex items-center ${
+                          metric.trend > 0 
+                            ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
+                            : metric.trend < 0
+                              ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                        }`}
+                      >
+                        {metric.trend > 0 ? '+' : ''}{metric.trend.toFixed(1)}%
+                      </span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {formatNumber(metric.totalHeat.toString())}
+                      </span>
+                    </div>
                   </div>
                   <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <motion.div 
@@ -287,8 +368,37 @@ export default function TrendVisualization({ trendingData, timeRange }: TrendVis
             </div>
           </div>
           
+          {/* 标题长度对比 - 新增 */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+            <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">平均标题长度</h4>
+            
+            <div className="space-y-4">
+              {metrics.map(metric => (
+                <div key={`title-${metric.platform}`}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium" style={{ color: metric.color }}>
+                      {metric.name}
+                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {metric.avgTitleLength || 0} 字符
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${maxTitleLength > 0 ? (metric.avgTitleLength || 0) / maxTitleLength * 100 : 0}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full"
+                      style={{ backgroundColor: metric.color }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
           {/* 主题分布 */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 md:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
             <h4 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">主题分布</h4>
             
             <div className="flex flex-wrap gap-2">

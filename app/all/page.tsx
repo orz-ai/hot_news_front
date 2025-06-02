@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { PLATFORMS } from "../../constants/platforms";
 import PlatformCard from "../../components/PlatformCard";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { fetchAllPlatformsData, AllPlatformsResponse } from "../../utils/api";
+import { PlatformType, TrendingItem } from "../../types";
 
 // 动画变体
 const containerVariants = {
@@ -26,6 +29,9 @@ export default function AllPlatformsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [trendingData, setTrendingData] = useState<Record<PlatformType, TrendingItem[]>>({} as Record<PlatformType, TrendingItem[]>);
+  const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -42,6 +48,29 @@ export default function AllPlatformsPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
+  // 加载所有平台数据
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // 使用新的API一次性获取所有平台数据
+        const response = await fetchAllPlatformsData(currentDate);
+        
+        if (response.status === '200') {
+          setTrendingData(response.data);
+        } else {
+          console.error('Failed to fetch all platforms data:', response.msg);
+        }
+      } catch (error) {
+        console.error('Error fetching all platforms data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [currentDate]);
   
   // Extract all unique categories from platforms
   const allCategories = Array.from(
@@ -257,42 +286,55 @@ export default function AllPlatformsPage() {
         </div>
       </div>
       
+      {/* 加载指示器 */}
+      {loading && (
+        <div className="flex justify-center items-center py-20">
+          <LoadingSpinner size="lg" />
+        </div>
+      )}
+      
       {/* 平台卡片 */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {filteredPlatforms.length > 0 ? (
-          filteredPlatforms.map((platform, index) => (
-            <motion.div key={platform.code} variants={itemVariants}>
-              <PlatformCard platform={platform} index={index} />
-            </motion.div>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-card border border-gray-100 dark:border-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              未找到匹配的平台
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              请尝试使用其他搜索条件或清除筛选
-            </p>
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory(null);
-              }}
-              className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors text-sm font-medium"
-            >
-              清除所有筛选
-            </button>
-          </div>
-        )}
-      </motion.div>
+      {!loading && (
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {filteredPlatforms.length > 0 ? (
+            filteredPlatforms.map((platform, index) => (
+              <motion.div key={platform.code} variants={itemVariants}>
+                <PlatformCard 
+                  platform={platform} 
+                  index={index} 
+                  trendingItems={trendingData[platform.code] || []}
+                />
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-card border border-gray-100 dark:border-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                未找到匹配的平台
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                请尝试使用其他搜索条件或清除筛选
+              </p>
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategory(null);
+                }}
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors text-sm font-medium"
+              >
+                清除所有筛选
+              </button>
+            </div>
+          )}
+        </motion.div>
+      )}
     </>
   );
 } 

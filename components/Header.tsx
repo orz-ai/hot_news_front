@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { TrendingItem } from '../types';
 import { PLATFORMS } from '../constants/platforms';
+import { searchTrendingItems, SearchResponse } from '../utils/api';
 
 // 全局热点数据上下文类型
 interface GlobalDataContextProps {
@@ -47,55 +48,67 @@ export default function Header() {
     };
   }, []);
 
-  // 从localStorage获取热点数据进行搜索
+  // 从API获取搜索结果
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setSearchResults([]);
-      return;
-    }
+    // 创建一个防抖函数来减少API调用
+    const debounce = (fn: Function, delay: number) => {
+      let timer: NodeJS.Timeout;
+      return function(...args: any[]) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      }
+    };
 
-    // 尝试从localStorage获取热点数据
-    try {
-      const cachedTrendingData = localStorage.getItem('trendingData');
-      if (!cachedTrendingData) {
+    // 防抖搜索函数
+    const debouncedSearch = debounce(async (query: string) => {
+      if (query.trim() === '') {
+        setSearchResults([]);
         return;
       }
 
-      const trendingData: Record<string, TrendingItem[]> = JSON.parse(cachedTrendingData);
-      
-      // 从所有平台的热点数据中搜索匹配的项目
-      const allItems = Object.values(trendingData).flat();
-      
-      // 根据标题和描述进行搜索
-      const results = allItems.filter(item => {
-        const titleMatch = item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase());
-        const descMatch = item.desc && item.desc.toLowerCase().includes(searchQuery.toLowerCase());
-        return titleMatch || descMatch;
-      });
-      
-      // 限制结果数量并按热度排序
-      setSearchResults(
-        results
-          .sort((a, b) => {
-            const scoreA = parseInt(a.score || '0') || 0;
-            const scoreB = parseInt(b.score || '0') || 0;
-            return scoreB - scoreA;
-          })
-          .slice(0, 8)
-      );
-    } catch (error) {
-      console.error('Error searching cached trending data:', error);
-      // 如果无法从缓存获取数据，使用默认搜索结果
-      if (searchQuery.trim()) {
+      try {
+        // 调用后端搜索API
+        const response = await searchTrendingItems(query);
+        
+        if (response.status === '200' && response.data.length > 0) {
+          // 将API返回的结果转换为TrendingItem格式
+          const formattedResults: TrendingItem[] = response.data.map(item => ({
+            title: item.title,
+            url: item.url,
+            score: item.rank || '0',
+            desc: `${item.category} · ${item.sub_category}`,
+            source: item.source
+          }));
+          
+          setSearchResults(formattedResults);
+        } else {
+          // 如果没有结果，显示一条提示信息
+          setSearchResults([
+            {
+              title: `没有找到与"${query}"相关的热点`,
+              url: '#',
+              score: '0',
+              desc: '可能还没有相关的热点内容'
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error searching trending items:', error);
         setSearchResults([
           {
-            title: `没有找到与"${searchQuery}"相关的热点`,
+            title: `搜索出错`,
             url: '#',
             score: '0',
-            desc: '可能还没有相关的热点内容或数据正在加载中'
+            desc: '请稍后再试'
           }
         ]);
       }
+    }, 300); // 300ms的防抖延迟
+
+    if (searchQuery) {
+      debouncedSearch(searchQuery);
+    } else {
+      setSearchResults([]);
     }
   }, [searchQuery]);
 
@@ -151,11 +164,6 @@ export default function Header() {
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
         <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
       </svg>
-    ) },
-    { href: '/user', label: '用户中心', icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-      </svg>
     ) }
   ];
 
@@ -187,10 +195,8 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white p-2 sm:p-2.5 rounded-xl shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/30 transition-all duration-300 transform group-hover:scale-105">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                </svg>
+              <div className="w-10 h-10 flex-shrink-0 rounded-md overflow-hidden">
+                <img src="/android-chrome-192x192.png" alt="热点速览" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col">
                 <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">热点速览</span>
@@ -248,48 +254,17 @@ export default function Header() {
                     </div>
                     {searchResults.map((result, index) => {
                       // 查找结果所属的平台
-                      let platformCode = '';
-                      // 检查localStorage中是否有记录这个结果的平台
-                      try {
-                        const cachedTrendingData = localStorage.getItem('trendingData');
-                        if (cachedTrendingData) {
-                          const trendingData = JSON.parse(cachedTrendingData);
-                          // 找到包含此结果的平台
-                          for (const [code, items] of Object.entries(trendingData)) {
-                            if (Array.isArray(items) && items.some(item => item.title === result.title)) {
-                              platformCode = code;
-                              break;
-                            }
-                          }
-                        }
-                      } catch (error) {
-                        console.error('Error finding platform for search result:', error);
-                      }
+                      const platformCode = result.source || '';
                       
                       // 获取平台信息
                       const platform = PLATFORMS.find(p => p.code === platformCode);
                       
-                      // 查找该结果在平台中的排名
-                      let ranking = -1;
-                      try {
-                        const cachedTrendingData = localStorage.getItem('trendingData');
-                        if (cachedTrendingData && platformCode) {
-                          const trendingData = JSON.parse(cachedTrendingData);
-                          const platformItems = trendingData[platformCode];
-                          if (Array.isArray(platformItems)) {
-                            const index = platformItems.findIndex(item => item.title === result.title);
-                            if (index !== -1) {
-                              ranking = index + 1; // 排名从1开始
-                            }
-                          }
-                        }
-                      } catch (error) {
-                        console.error('Error finding ranking for search result:', error);
-                      }
+                      // 获取排名
+                      const ranking = result.score && result.score !== '0' ? parseInt(result.score) : -1;
                       
                       return (
                         <div 
-                          key={index} 
+                          key={index}
                           className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 group transition-colors duration-150 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                           onClick={() => handleResultClick(result)}
                         >
@@ -356,17 +331,6 @@ export default function Header() {
                 )}
               </motion.div>
             </div>
-            
-            {/* 用户中心图标 */}
-            <Link 
-              href="/user"
-              className="p-2.5 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 bg-gray-50 dark:bg-gray-800/60 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 border border-gray-100 dark:border-gray-700/50 hover:shadow-md group"
-              aria-label="用户中心"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 transform transition-transform duration-300 group-hover:scale-110">
-                <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-              </svg>
-            </Link>
           </div>
         </div>
 
@@ -402,48 +366,17 @@ export default function Header() {
                 </div>
                 {searchResults.map((result, index) => {
                   // 查找结果所属的平台
-                  let platformCode = '';
-                  // 检查localStorage中是否有记录这个结果的平台
-                  try {
-                    const cachedTrendingData = localStorage.getItem('trendingData');
-                    if (cachedTrendingData) {
-                      const trendingData = JSON.parse(cachedTrendingData);
-                      // 找到包含此结果的平台
-                      for (const [code, items] of Object.entries(trendingData)) {
-                        if (Array.isArray(items) && items.some(item => item.title === result.title)) {
-                          platformCode = code;
-                          break;
-                        }
-                      }
-                    }
-                  } catch (error) {
-                    console.error('Error finding platform for search result:', error);
-                  }
+                  const platformCode = result.source || '';
                   
                   // 获取平台信息
                   const platform = PLATFORMS.find(p => p.code === platformCode);
                   
-                  // 查找该结果在平台中的排名
-                  let ranking = -1;
-                  try {
-                    const cachedTrendingData = localStorage.getItem('trendingData');
-                    if (cachedTrendingData && platformCode) {
-                      const trendingData = JSON.parse(cachedTrendingData);
-                      const platformItems = trendingData[platformCode];
-                      if (Array.isArray(platformItems)) {
-                        const index = platformItems.findIndex(item => item.title === result.title);
-                        if (index !== -1) {
-                          ranking = index + 1; // 排名从1开始
-                        }
-                      }
-                    }
-                  } catch (error) {
-                    console.error('Error finding ranking for search result:', error);
-                  }
+                  // 获取排名
+                  const ranking = result.score && result.score !== '0' ? parseInt(result.score) : -1;
                   
                   return (
                     <div 
-                      key={index} 
+                      key={index}
                       className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 group transition-colors duration-150 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                       onClick={() => handleResultClick(result)}
                     >
@@ -597,7 +530,7 @@ function NavMenu({ navItems, pathname }: { navItems: any[], pathname: string }) 
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
-            {item.icon}
+            <span className="mr-2">{item.icon}</span>
             {item.label}
           </Link>
         ))}

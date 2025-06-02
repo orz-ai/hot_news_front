@@ -10,6 +10,18 @@ interface TrendingItemProps {
 }
 
 export default function TrendingItem({ item, index, platformColor = '#3b76ea' }: TrendingItemProps) {
+  // 格式化时间，只显示时分秒
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return '最新';
+    const parts = timeString.split(' ');
+    return parts.length > 1 ? parts[1] : timeString;
+  };
+
+  // 如果没有标题，则不显示该项目
+  if (!item.title || item.title.trim() === '') {
+    return null;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -61,8 +73,11 @@ export default function TrendingItem({ item, index, platformColor = '#3b76ea' }:
                 </span>
               )}
               
-              <span className="text-xs text-gray-400 dark:text-gray-500">
-                {item.pubDate || '最新'}
+              <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {formatTime(item.publish_time || item.pubDate)}
               </span>
             </div>
           </div>

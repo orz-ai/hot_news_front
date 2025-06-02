@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { PlatformType, TrendingItem } from '../types';
+import { PlatformType, TrendingItem, TrendForecastResponse } from '../types';
 import { PLATFORMS } from '../constants/platforms';
+import { fetchTrendForecast } from '../utils/api';
+import LoadingSpinner from './LoadingSpinner';
 
 interface TrendPredictionProps {
   trendingData: Record<PlatformType, TrendingItem[]>;
@@ -21,136 +23,57 @@ interface PredictionResult {
 
 export default function TrendPrediction({ trendingData }: TrendPredictionProps) {
   const [timeFrame, setTimeFrame] = useState<'day' | 'week' | 'month'>('day');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [forecastData, setForecastData] = useState<TrendForecastResponse | null>(null);
   
-  // Generate predictions based on current trending data
-  // This is a simplified simulation - in a real app, you would use historical data and ML models
+  // Fetch trend forecast data when timeFrame changes
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Convert timeFrame to API parameter format
+        const timeRange = timeFrame === 'day' ? '24h' : timeFrame === 'week' ? '7d' : '30d';
+        const response = await fetchTrendForecast(timeRange);
+        setForecastData(response);
+      } catch (error) {
+        console.error('Error fetching trend forecast:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [timeFrame]);
+  
+  // Transform API data to prediction results format
   const predictions = useMemo(() => {
-    if (!trendingData || Object.keys(trendingData).length === 0) {
+    if (!forecastData || !forecastData.has_enough_data || forecastData.trend_evolution.length === 0) {
       return [];
     }
     
-    // Categories for classification
-    const categories = ['科技', '社会', '娱乐', '财经', '体育'];
-    
-    // Extract all trending items
-    const allItems = Object.entries(trendingData).flatMap(([platform, items]) => 
-      items.map(item => ({
-        ...item,
-        platform: platform as PlatformType
-      }))
-    );
-    
-    // Get top items based on score
-    const topItems = [...allItems]
-      .sort((a, b) => {
-        const scoreA = parseInt(a.score || '0') || 0;
-        const scoreB = parseInt(b.score || '0') || 0;
-        return scoreB - scoreA;
-      })
-      .slice(0, 50);
-    
-    // Simple keyword extraction
-    const extractKeywords = (text: string) => {
-      if (!text) return [];
+    return forecastData.trend_evolution.map(item => {
+      // Calculate growth score (-100 to 100) based on forecast vs current heat
+      const currentHeat = item.current_heat;
+      const forecastHeat = item.forecast[0]?.heat || currentHeat;
+      const growthDiff = forecastHeat - currentHeat;
+      const growthScore = Math.min(Math.max(Math.round(growthDiff * 2), -100), 100);
       
-      // Remove common words and characters
-      const cleanedText = text.replace(/[^\w\s\u4e00-\u9fff]/g, ' ');
-      const words = cleanedText.split(/\s+/).filter(word => 
-        word.length >= 2 && !['的', '了', '和', '与', '在', '是'].includes(word)
-      );
+      // Map platforms to PlatformType
+      const platformSource = item.platforms
+        .filter(p => Object.values(PLATFORMS).some(platform => platform.code === p))
+        .map(p => p as PlatformType);
       
-      return words;
-    };
-    
-    // Group related items by keywords/similarity
-    const relatedGroups: Record<string, {
-      items: typeof topItems,
-      keywords: string[],
-      platforms: Set<PlatformType>
-    }> = {};
-    
-    topItems.forEach(item => {
-      const keywords = extractKeywords(item.title || '');
-      
-      // Find existing group with overlapping keywords
-      let matchedGroup = null;
-      for (const [groupId, group] of Object.entries(relatedGroups)) {
-        const overlap = keywords.filter(kw => 
-          group.keywords.some(gkw => gkw.includes(kw) || kw.includes(gkw))
-        );
-        
-        if (overlap.length >= 2 || (overlap.length >= 1 && keywords.length <= 3)) {
-          matchedGroup = groupId;
-          break;
-        }
-      }
-      
-      if (matchedGroup) {
-        // Add to existing group
-        relatedGroups[matchedGroup].items.push(item);
-        relatedGroups[matchedGroup].platforms.add(item.platform);
-        
-        // Update keywords
-        keywords.forEach(kw => {
-          if (!relatedGroups[matchedGroup].keywords.includes(kw)) {
-            relatedGroups[matchedGroup].keywords.push(kw);
-          }
-        });
-      } else {
-        // Create new group
-        const groupId = `group_${Object.keys(relatedGroups).length}`;
-        relatedGroups[groupId] = {
-          items: [item],
-          keywords,
-          platforms: new Set([item.platform])
-        };
-      }
+      return {
+        topic: item.topic,
+        keywords: item.keywords,
+        confidence: item.probability,
+        relatedTopics: item.keywords, // Using keywords as related topics since API doesn't provide separate related topics
+        platformSource,
+        growthScore,
+        category: item.category
+      } as PredictionResult;
     });
-    
-    // Generate predictions from groups
-    const results: PredictionResult[] = Object.values(relatedGroups)
-      .filter(group => group.items.length >= 2 && group.platforms.size >= 2)
-      .map(group => {
-        // Select main topic
-        const mainItem = group.items[0];
-        
-        // Calculate confidence score (0-100)
-        // Factors: number of platforms, item scores, keyword overlap
-        const platformFactor = Math.min(group.platforms.size / 5, 1) * 0.4;
-        const scoreFactor = Math.min(
-          group.items.reduce((sum, item) => sum + (parseInt(item.score || '0') || 0), 0) / 10000, 
-          1
-        ) * 0.4;
-        const keywordFactor = Math.min(group.keywords.length / 10, 1) * 0.2;
-        
-        const confidence = Math.round((platformFactor + scoreFactor + keywordFactor) * 100);
-        
-        // Simulate growth score (-100 to 100)
-        const growthScore = Math.round((Math.random() * 140) - 40);
-        
-        // Assign random category (in a real app would use NLP)
-        const category = categories[Math.floor(Math.random() * categories.length)];
-        
-        // Generate related topics
-        const relatedTopics = group.keywords
-          .filter((_, i) => i < 5)
-          .filter(kw => kw.length >= 2);
-        
-        return {
-          topic: mainItem.title || '未知主题',
-          keywords: group.keywords.slice(0, 5),
-          confidence,
-          relatedTopics,
-          platformSource: Array.from(group.platforms),
-          growthScore,
-          category
-        };
-      })
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 5);
-    
-    return results;
-  }, [trendingData, timeFrame]);
+  }, [forecastData]);
   
   // Get color based on growth score
   const getGrowthColor = (score: number) => {
@@ -223,10 +146,15 @@ export default function TrendPrediction({ trendingData }: TrendPredictionProps) 
       </div>
       
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        基于当前热点数据和历史趋势，预测未来{timeFrame === 'day' ? '24小时' : timeFrame === 'week' ? '7天' : '30天'}内可能持续升温的热门话题。
+        {forecastData?.description || `基于当前热点数据和历史趋势，预测未来${timeFrame === 'day' ? '24小时' : timeFrame === 'week' ? '7天' : '30天'}内可能持续升温的热门话题。`}
       </p>
       
-      {predictions.length > 0 ? (
+      {loading ? (
+        <div className="py-16 flex flex-col items-center justify-center">
+          <LoadingSpinner size="lg" className="mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">加载预测数据中...</p>
+        </div>
+      ) : predictions.length > 0 ? (
         <div className="space-y-6">
           {predictions.map((prediction, index) => (
             <motion.div
@@ -374,7 +302,7 @@ export default function TrendPrediction({ trendingData }: TrendPredictionProps) 
       
       <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
         <p>
-          趋势预测基于当前热点数据分析和简单的模拟算法，仅供参考。实际趋势可能受到多种因素影响而变化。
+          趋势预测基于当前热点数据分析和历史趋势算法，仅供参考。实际趋势可能受到多种因素影响而变化。
         </p>
       </div>
     </div>

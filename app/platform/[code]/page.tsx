@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { PLATFORMS } from "../../../constants/platforms";
 import TrendingItem from "../../../components/TrendingItem";
 import LoadingSpinner from "../../../components/LoadingSpinner";
-import { fetchTrendingData } from "../../../utils/api";
+import { fetchTrendingData, fetchMultiPlatformData } from "../../../utils/api";
 import { TrendingItem as TrendingItemType, PlatformType } from "../../../types";
 
 export default function PlatformPage() {
@@ -21,6 +21,13 @@ export default function PlatformPage() {
   // Get platform info
   const platformInfo = PLATFORMS.find(p => p.code === platformCode);
 
+  // 格式化时间，只显示时分秒
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return null;
+    const parts = timeString.split(' ');
+    return parts.length > 1 ? parts[1] : timeString;
+  };
+
   // Fetch data for the platform
   useEffect(() => {
     const fetchData = async () => {
@@ -28,12 +35,16 @@ export default function PlatformPage() {
       setError(null);
       
       try {
-        const response = await fetchTrendingData(platformCode);
+        // 使用新的多平台API获取数据
+        const response = await fetchMultiPlatformData([platformCode]);
+        const platformResponse = response[platformCode];
         
-        if (response.status === '200') {
-          setTrendingData(response.data);
+        if (platformResponse && platformResponse.status === '200') {
+          // 过滤掉没有标题的项目
+          const validItems = platformResponse.data.filter(item => item.title && item.title.trim() !== '');
+          setTrendingData(validItems);
         } else {
-          setError(`获取数据失败: ${response.msg}`);
+          setError(`获取数据失败: ${platformResponse?.msg || '未知错误'}`);
         }
       } catch (error) {
         console.error(`Error fetching ${platformCode} data:`, error);
@@ -115,7 +126,11 @@ export default function PlatformPage() {
           
           <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1 ml-4">
             <span className="font-medium">更新频率:</span>
-            <span>{platformInfo.updateFrequency}</span>
+            <span>
+              {trendingData.length > 0 && trendingData[0].publish_time 
+                ? formatTime(trendingData[0].publish_time) 
+                : platformInfo.updateFrequency}
+            </span>
           </div>
         </div>
       </motion.div>
@@ -129,11 +144,19 @@ export default function PlatformPage() {
             className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1"
             onClick={() => {
               setLoading(true);
-              fetchTrendingData(platformCode).then(response => {
-                setTrendingData(response.data);
+              fetchMultiPlatformData([platformCode]).then(response => {
+                const platformResponse = response[platformCode];
+                if (platformResponse && platformResponse.status === '200') {
+                  // 过滤掉没有标题的项目
+                  const validItems = platformResponse.data.filter(item => item.title && item.title.trim() !== '');
+                  setTrendingData(validItems);
+                } else {
+                  setError(`获取数据失败: ${platformResponse?.msg || '未知错误'}`);
+                }
                 setLoading(false);
               }).catch(error => {
                 console.error('Error refreshing data:', error);
+                setError('获取数据时出错，请稍后再试');
                 setLoading(false);
               });
             }}

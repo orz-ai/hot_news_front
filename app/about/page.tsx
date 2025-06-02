@@ -35,16 +35,6 @@ export default function AboutPage() {
             我们目前支持 17 个主流平台的热点内容获取，包括社交媒体、新闻资讯、技术社区、视频平台等多种类型。每个平台的内容都会每 30 分钟更新一次，确保信息的时效性。
           </p>
           
-          <h2>技术实现</h2>
-          <p>
-            热点速览使用现代化的技术栈构建，包括：
-          </p>
-          <ul>
-            <li>Next.js - React 框架，提供服务端渲染和静态生成</li>
-            <li>TypeScript - 类型安全的 JavaScript 超集</li>
-            <li>Tailwind CSS - 实用性优先的 CSS 框架</li>
-            <li>Framer Motion - 强大的动画库</li>
-          </ul>
           
           <h2>API 服务</h2>
           <p>
@@ -61,8 +51,8 @@ export default function AboutPage() {
             如果您有任何问题或建议，请随时与我们联系。您可以通过以下方式联系我们：
           </p>
           <ul>
-            <li>电子邮件：contact@example.com</li>
-            <li>GitHub 仓库：<a href="https://github.com/" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">热点速览</a></li>
+            <li>电子邮件：deepincode@qq.com</li>
+            <li>GitHub 仓库：<a href="https://github.com/orz-ai/hot_news" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">热点速览</a></li>
           </ul>
           
           <h2>免责声明</h2>

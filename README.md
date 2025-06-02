@@ -49,7 +49,16 @@ npm install
 yarn install
 ```
 
-3. 启动开发服务器
+3. 配置环境变量
+
+```bash
+# 复制环境变量示例文件
+cp .env.example .env.local
+
+# 根据需要编辑 .env.local 文件
+```
+
+4. 启动开发服务器
 
 ```bash
 npm run dev
@@ -57,7 +66,15 @@ npm run dev
 yarn dev
 ```
 
-4. 在浏览器中打开 [http://localhost:3000](http://localhost:3000)
+5. 在浏览器中打开 [http://localhost:3000](http://localhost:3000)
+
+## 环境变量
+
+项目使用以下环境变量：
+
+| 变量名 | 描述 | 默认值 |
+|----------|----------|----------|
+| NEXT_PUBLIC_API_BASE_URL | API 服务的基础 URL | https://orz.ai/api/v1/dailynews/ |
 
 ## API 使用
 
