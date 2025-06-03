@@ -16,6 +16,7 @@ interface GlobalDataContextProps {
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,14 +24,33 @@ export default function Header() {
   const searchRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
+  const lastScrollY = useRef(0);
   
-  // 检测滚动以改变header样式
+  // 检测滚动以改变header样式和显示/隐藏状态
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      
+      // 设置是否已滚动（背景效果）
+      setScrolled(currentScrollY > 10);
+      
+      // 判断滚动方向并控制显示/隐藏
+      if (currentScrollY <= 10) {
+        // 当滚到顶部时，始终显示header
+        setVisible(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        // 向下滚动时隐藏
+        setVisible(false);
+      } else {
+        // 向上滚动时显示
+        setVisible(true);
+      }
+      
+      // 记录当前滚动位置
+      lastScrollY.current = currentScrollY;
     };
     
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -182,12 +202,17 @@ export default function Header() {
   };
 
   return (
-    <header 
+    <motion.header 
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled 
           ? 'bg-white/90 dark:bg-gray-900/95 backdrop-blur-md shadow-md' 
           : 'bg-white dark:bg-gray-900'
       } border-b border-gray-100 dark:border-gray-800`}
+      initial={{ transform: "translateY(0)" }}
+      animate={{
+        transform: visible ? "translateY(0)" : "translateY(-100%)"
+      }}
+      transition={{ duration: 0.3 }}
     >
       <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
         {/* Logo区域和搜索框 */}
@@ -466,7 +491,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
