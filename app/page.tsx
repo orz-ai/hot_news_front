@@ -17,10 +17,9 @@ import { ApiResponse, PlatformType, TrendingItem as TrendingItemType, HotKeyword
 // Featured platforms to show on the homepage
 const FEATURED_PLATFORMS: PlatformType[] = ['baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github'];
 
-// 所有平台集合
 const ALL_PLATFORMS: PlatformType[] = [
-  'baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github', '36kr', 
-  'shaoshupai', 'douban', 'hupu', 'tieba', 'juejin', 'v2ex', 
+  'baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github', '36kr',
+  'shaoshupai', 'douban', 'hupu', 'tieba', 'juejin', 'v2ex',
   'jinritoutiao', 'stackoverflow', 'hackernews'
 ];
 
@@ -56,7 +55,7 @@ const COMMON_STOP_WORDS = new Set([
   '最新', '消息', '热门', '热点', '新闻', '发布', '报道', '揭秘', '曝光', '一个', '什么', '来', '去',
   '如何', '为什么', '可能', '终于', '突然', '原来', '真的', '官宣', '重磅', '首次', '都', '每',
   '让', '把', '能', '说', '要', '会', '我', '你', '他', '她', '它', '他们', '她们', '它们',
-  
+
   // 常见英文单词作为额外过滤
   'the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'that', 'for', 'you', 'was', 'on',
   'with', 'as', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by',
@@ -69,18 +68,18 @@ const COMMON_STOP_WORDS = new Set([
 const isValidChineseWord = (word: string): boolean => {
   // 长度至少为2
   if (word.length < 2) return false;
-  
+
   // 必须全部是中文字符
   for (let i = 0; i < word.length; i++) {
     if (!isChineseChar(word[i])) return false;
   }
-  
+
   // 不能含有英文字母、数字或特殊字符
   if (/[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]/.test(word)) return false;
-  
+
   // 不能是停用词
   if (COMMON_STOP_WORDS.has(word)) return false;
-  
+
   return true;
 };
 
@@ -153,7 +152,7 @@ export default function Home() {
       acc[platform] = true;
       return acc;
     }, {} as Record<PlatformType, boolean>);
-    
+
     setLoading(initialLoadingState);
   }, []);
 
@@ -163,40 +162,40 @@ export default function Home() {
       try {
         // 只获取首页需要显示的精选平台数据，而不是所有平台
         const response = await fetchMultiPlatformData(FEATURED_PLATFORMS);
-        
+
         // 更新每个平台的数据和加载状态
         let loadedCount = 0;
-        
+
         // 处理每个平台的响应
         Object.entries(response).forEach(([platform, platformResponse]) => {
           const platformCode = platform as PlatformType;
-          
+
           if (platformResponse.status === '200') {
             setTrendingData(prev => ({
               ...prev,
               [platformCode]: platformResponse.data
             }));
           }
-          
+
           setLoading(prev => ({
             ...prev,
             [platformCode]: false
           }));
-          
+
           loadedCount++;
         });
-        
+
         // 更新加载进度
         const progress = Math.round((loadedCount / FEATURED_PLATFORMS.length) * 100);
         setDataLoadProgress(progress);
-        
+
         // 如果所有精选平台都已加载，设置allDataLoaded为true
         if (loadedCount === FEATURED_PLATFORMS.length) {
           setAllDataLoaded(true);
         }
       } catch (error) {
         console.error('Error fetching platform data:', error);
-        
+
         // 如果出错，将所有平台的加载状态设为false
         const updatedLoadingState = { ...loading };
         FEATURED_PLATFORMS.forEach(platform => {
@@ -300,7 +299,7 @@ export default function Home() {
       }
     }
   }, [allDataLoaded, trendingData]);
-  
+
   // 平台热度对比和时序分析
   const { platformHotness, timeBasedTrends } = useMemo(() => {
     // 平台热度排名
@@ -308,17 +307,17 @@ export default function Home() {
       const platform = PLATFORMS.find(p => p.code === code);
       const items = trendingData[code] || [];
       const itemCount = items.length;
-      
+
       // 计算总热度和平均热度
       const totalScore = items.reduce((sum, item) => {
         const score = parseInt(item.score || '0') || 0;
         return sum + score;
       }, 0);
-      
+
       // 热度增长率（简单模拟 - 实际中应该比较历史数据）
       // 这里使用随机值模拟，实际项目应当使用真实的变化率
       const growthRate = (Math.random() * 20) - 10; // -10% 到 +10% 之间的随机值
-      
+
       return {
         code,
         name: platform?.name || code,
@@ -331,7 +330,7 @@ export default function Home() {
       };
     }).filter(p => p.itemCount > 0) // 过滤掉没有数据的平台
       .sort((a, b) => b.totalScore - a.totalScore);
-    
+
     // 时序趋势分析（基于发布时间）
     // 注：此处简单模拟，实际应根据真实的发布时间进行分析
     const timeFrames = {
@@ -340,7 +339,7 @@ export default function Home() {
       'evening': { label: '晚上', count: 0, percentage: 0 },
       'night': { label: '凌晨', count: 0, percentage: 0 }
     };
-    
+
     // 模拟时间分布 (在实际项目中应使用真实数据的pubDate)
     let totalItems = 0;
     Object.values(trendingData).forEach(items => {
@@ -354,55 +353,55 @@ export default function Home() {
         else timeFrames.night.count++;
       });
     });
-    
+
     // 计算百分比
     Object.values(timeFrames).forEach(frame => {
       frame.percentage = totalItems > 0 ? (frame.count / totalItems) * 100 : 0;
     });
-    
+
     return { platformHotness: hotness, timeBasedTrends: timeFrames };
   }, [trendingData]);
-  
+
   // 内容交叉关联分析
   const crossPlatformTrends = useMemo(() => {
     if (Object.keys(trendingData).length < 2) return [];
-    
+
     // 查找跨平台的相似内容
     const trends: Array<{topic: string, platforms: string[], totalHeat: number, matches: TrendingItemType[]}> = [];
     const processedTitles = new Set();
-    
+
     // 简单的相似度匹配（实际项目应使用更复杂的文本相似度算法）
     const findSimilarTitle = (title: string, threshold = 0.5) => {
       if (processedTitles.has(title)) return null;
-      
+
       const titleTokens = title.split(/[\s\!\.\,\:\;\?\(\)\[\]\{\}\"\'\，\。\！\？\：\；\（\）\【\】\「\」]/)
         .filter(w => w.length >= 2)
         .map(w => w.toLowerCase());
-      
+
       const matches: Array<{platform: string, item: TrendingItemType, similarity: number}> = [];
-      
+
       // 检查每个平台的内容
       Object.entries(trendingData).forEach(([platform, items]) => {
         items.forEach(item => {
           // 跳过自己
           if (item.title === title) return;
           if (processedTitles.has(item.title)) return;
-          
+
           const itemTokens = (item.title || '').split(/[\s\!\.\,\:\;\?\(\)\[\]\{\}\"\'\，\。\！\？\：\；\（\）\【\】\「\」]/)
             .filter(w => w.length >= 2)
             .map(w => w.toLowerCase());
-          
+
           // 计算共同词的数量
-          const commonTokens = titleTokens.filter(token => 
-            itemTokens.some(itemToken => 
+          const commonTokens = titleTokens.filter(token =>
+            itemTokens.some(itemToken =>
               itemToken.includes(token) || token.includes(itemToken)
             )
           );
-          
+
           // 计算相似度（简单的Jaccard相似度）
-          const similarity = commonTokens.length / 
+          const similarity = commonTokens.length /
             (titleTokens.length + itemTokens.length - commonTokens.length);
-          
+
           if (similarity >= threshold) {
             matches.push({
               platform,
@@ -412,32 +411,32 @@ export default function Home() {
           }
         });
       });
-      
+
       return matches.length > 0 ? matches : null;
     };
-    
+
     // 处理所有平台数据
     Object.entries(trendingData).forEach(([sourcePlatform, items]) => {
       items.forEach(sourceItem => {
         const title = sourceItem.title;
         if (!title || processedTitles.has(title)) return;
-        
+
         const matches = findSimilarTitle(title);
         if (matches) {
           // 标记所有匹配的标题为已处理
           processedTitles.add(title);
           matches.forEach(m => processedTitles.add(m.item.title || ''));
-          
+
           // 计算总热度
-          const totalHeat = parseInt(sourceItem.score || '0') + 
+          const totalHeat = parseInt(sourceItem.score || '0') +
             matches.reduce((sum, m) => sum + parseInt(m.item.score || '0'), 0);
-          
+
           // 收集所有相关平台
           const platforms = [sourcePlatform, ...matches.map(m => m.platform)];
-          
+
           // 收集所有匹配项
           const allMatches = [sourceItem, ...matches.map(m => m.item)];
-          
+
           trends.push({
             topic: title,
             platforms: [...new Set(platforms)], // 去重
@@ -447,7 +446,7 @@ export default function Home() {
         }
       });
     });
-    
+
     // 按照跨平台数量和总热度排序
     return trends
       .sort((a, b) => {
@@ -458,7 +457,7 @@ export default function Home() {
       })
       .slice(0, 5); // 只返回前5个
   }, [trendingData]);
-  
+
   // 获取活跃平台信息
   const activePlatformInfo = PLATFORMS.find(p => p.code === activePlatform);
 
@@ -468,7 +467,7 @@ export default function Home() {
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">全网热门关键词</h3>
           </div>
-          
+
       <div className="p-6">
         {analysisData.isLoading ? (
           <div className="flex justify-center py-8">
@@ -482,11 +481,11 @@ export default function Home() {
           <div className="flex flex-wrap gap-3">
             {analysisData.hotKeywords.map((keyword, index) => {
               // 根据权重选择样式
-              const size = keyword.weight >= 0.8 ? 'lg' : 
+              const size = keyword.weight >= 0.8 ? 'lg' :
                           keyword.weight >= 0.5 ? 'md' : 'sm';
               const randomCategory = TOPIC_CATEGORIES[index % TOPIC_CATEGORIES.length];
                           return (
-                                  <span 
+                                  <span
                   key={keyword.text}
                   className={`inline-block px-3 py-1.5 rounded-full text-${size} font-medium`}
                                     style={{
@@ -503,14 +502,14 @@ export default function Home() {
                   </div>
                 </div>
   );
-                
+
   // 主题分析视图 - 主题分布组件 - 更新为使用API数据
   const renderTopicDistribution = () => (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
                   <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">热点主题分布</h3>
                   </div>
-                  
+
                   <div className="p-6">
         {analysisData.isLoading ? (
           <div className="flex justify-center py-8">
@@ -536,9 +535,9 @@ export default function Home() {
                             </span>
                           </div>
                           <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div 
+                            <div
                               className="h-full transition-all duration-1000 ease-out"
-                              style={{ 
+                              style={{
                                 width: `${topic.percentage}%`,
                           backgroundColor: topicCategory.color
                               }}
@@ -548,20 +547,20 @@ export default function Home() {
                 );
               })}
                     </div>
-                    
+
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">相关主题词组</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {analysisData.relatedTopicGroups.map((group, index) => (
-                          <div 
+                          <div
                             key={index}
                             className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg border border-gray-100 dark:border-gray-700"
                           >
                             <div className="flex items-center gap-2 mb-2">
                     {group.words.map((word, i) => (
-                                <span 
+                                <span
                                   key={i}
                                   className="font-medium text-sm"
-                                  style={{ 
+                                  style={{
                                     color: TOPIC_CATEGORIES[i % TOPIC_CATEGORIES.length].color
                                   }}
                                 >
@@ -571,7 +570,7 @@ export default function Home() {
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="flex-grow h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-primary-500"
                         style={{ width: `${Math.min((group.co_occurrence / 8) * 100, 100)}%` }}
                                 ></div>
@@ -595,7 +594,7 @@ export default function Home() {
                   <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">平台热度排行</h3>
                   </div>
-                  
+
                   <div className="p-6">
         {platformComparisonData.isLoading ? (
           <div className="flex justify-center py-8">
@@ -612,22 +611,22 @@ export default function Home() {
               return (
                 <div key={platform.platform} className="group">
                           <div className="flex items-center gap-3 mb-2">
-                            <div 
+                            <div
                               className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white font-medium shadow-sm group-hover:shadow-md transition-all duration-300"
-                              style={{ 
+                              style={{
                         background: `linear-gradient(135deg, ${platformInfo?.color || '#3b76ea'}, ${adjustColor(platformInfo?.color || '#3b76ea', -20)})`,
                                 transform: "translateZ(0)"
                               }}
                             >
                       {platform.rank}
                             </div>
-                            
+
                             <h4 className="text-base font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {platformInfo?.name || platform.platform}
                             </h4>
-                            
+
                             <div className="ml-auto flex gap-2 items-center">
-                              <span 
+                              <span
                                 className={`text-xs px-2 py-0.5 rounded-full flex items-center ${
                           platform.trend > 0 
                                     ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
@@ -636,10 +635,10 @@ export default function Home() {
                               >
                         {platform.trend > 0 ? '+' : ''}{platform.trend.toFixed(1)}%
                               </span>
-                              
-                              <span 
+
+                              <span
                                 className="text-sm px-2.5 py-1 rounded-full"
-                                style={{ 
+                                style={{
                           backgroundColor: `${platformInfo?.color || '#3b76ea'}15`,
                           color: platformInfo?.color || '#3b76ea'
                                 }}
@@ -648,11 +647,11 @@ export default function Home() {
                               </span>
                             </div>
                           </div>
-                          
+
                           <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div 
+                            <div
                               className="h-full transition-all duration-1000 ease-out"
-                              style={{ 
+                              style={{
                         width: `${((platformComparisonData.platformRankings.length - platform.rank + 1) / platformComparisonData.platformRankings.length) * 100}%`,
                         background: `linear-gradient(to right, ${platformInfo?.color || '#3b76ea'}, ${adjustColor(platformInfo?.color || '#3b76ea', 20)})`
                               }}
@@ -666,14 +665,14 @@ export default function Home() {
                   </div>
                 </div>
   );
-                
+
   // 热点时间分布组件 - 更新为使用API数据
   const renderTimeDistribution = () => (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
                   <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">热点时间分布</h3>
                   </div>
-                  
+
                   <div className="p-6">
         {platformComparisonData.isLoading ? (
           <div className="flex justify-center py-8">
@@ -684,10 +683,10 @@ export default function Home() {
                       {/* 时间段分布 */}
                       <div>
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">一天内热点发布时段分布</h4>
-                        
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {Object.entries(platformComparisonData.timeDistribution).map(([timeKey, data]) => (
-                            <div 
+                            <div
                               key={timeKey}
                               className="bg-gray-50 dark:bg-gray-800/60 p-4 rounded-lg border border-gray-100 dark:border-gray-700"
                             >
@@ -699,7 +698,7 @@ export default function Home() {
                                   {data.label}
                                 </span>
                                 <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                  <div 
+                                  <div
                                     className="h-full bg-primary-600"
                                     style={{ width: `${data.percentage}%` }}
                                   ></div>
@@ -709,22 +708,22 @@ export default function Home() {
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* 平台更新频率信息 */}
                       <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">平台更新频率</h4>
-                        
+
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {platformComparisonData.platformRankings.slice(0, 6).map((platform) => {
                   const platformInfo = PLATFORMS.find(p => p.code === platform.platform);
-                            
+
                             return (
-                              <div 
+                              <div
                       key={platform.platform}
                                 className="flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-750"
                               >
-                                <span 
-                                  className="w-2 h-2 rounded-full" 
+                                <span
+                                  className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: platformInfo?.color || '#3b76ea' }}
                                 ></span>
                       <span className="text-gray-700 dark:text-gray-300">{platformInfo?.name || platform.platform}</span>
@@ -741,14 +740,14 @@ export default function Home() {
                   </div>
                 </div>
   );
-            
+
   // 跨平台热点视图 - 更新为使用API数据
   const renderCrossPlatformTopics = () => (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
                 <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">跨平台热点事件</h3>
                 </div>
-                
+
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
         {crossPlatformData.isLoading ? (
           <div className="p-12 flex justify-center">
@@ -765,7 +764,7 @@ export default function Home() {
                           <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">
                   {topic.title}
                           </h4>
-                          
+
                           <div className="flex items-center gap-2 ml-auto">
                             <span className="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-2.5 py-1 rounded-full">
                     {topic.platforms_count}个平台
@@ -777,15 +776,15 @@ export default function Home() {
                   )}
                           </div>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-2 mb-4">
                 {topic.platforms.map(platformCode => {
                             const platform = PLATFORMS.find(p => p.code === platformCode);
                             return (
-                              <span 
+                              <span
                                 key={platformCode}
                                 className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                                style={{ 
+                                style={{
                                   backgroundColor: `${platform?.color || '#3b76ea'}15`,
                                   color: platform?.color || '#3b76ea'
                                 }}
@@ -795,12 +794,12 @@ export default function Home() {
                             );
                           })}
                         </div>
-                        
+
                         <div className="space-y-3">
                 {topic.related_items.slice(0, 3).map((item, i) => {
                   const platform = PLATFORMS.find(p => p.code === item.platform);
                   return (
-                            <a 
+                            <a
                               key={i}
                               href={item.url}
                               target="_blank"
@@ -808,7 +807,7 @@ export default function Home() {
                               className="block p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-gray-100 dark:border-gray-700"
                             >
                               <div className="flex gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center" 
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
                           style={{ backgroundColor: platform?.color || '#3b76ea' }}>
                           <span className="text-white text-xs font-bold">
                             {platform?.name?.substring(0, 1) || item.platform.substring(0, 1)}
@@ -818,11 +817,11 @@ export default function Home() {
                                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     {item.title}
                                   </p>
-                                  
+
                           {item.similarity !== undefined && item.similarity > 0 && (
                             <div className="mt-1 flex items-center gap-2">
                               <div className="flex-grow h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-green-500"
                                   style={{ width: `${item.similarity * 100}%` }}
                                 ></div>
@@ -833,7 +832,7 @@ export default function Home() {
                             </div>
                                   )}
                                 </div>
-                                
+
                                 <div className="flex-shrink-0 flex items-center text-gray-400 dark:text-gray-500">
                                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -890,27 +889,27 @@ export default function Home() {
               汇聚17个平台的实时热点内容
             </span>
           </div>
-          
+
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
             <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
               全网热点
             </span>
             <span className="text-gray-900 dark:text-white"> 一站速览</span>
           </h1>
-          
+
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
             每30分钟自动更新，让您随时了解全网最新热门话题、事件和趋势。
           </p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              href="/all" 
+            <Link
+              href="/all"
               className="px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-primary-500/20 transform hover:-translate-y-1 transition-all duration-300"
             >
               浏览全部平台
             </Link>
-            <Link 
-              href="/about" 
+            <Link
+              href="/about"
               className="px-8 py-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 font-medium rounded-xl hover:shadow-md transform hover:-translate-y-1 transition-all duration-300"
             >
               了解更多
@@ -930,8 +929,8 @@ export default function Home() {
             </svg>
           </Link>
         </div>
-        
-        <motion.div 
+
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
@@ -940,9 +939,9 @@ export default function Home() {
           {PLATFORMS.filter(platform => FEATURED_PLATFORMS.includes(platform.code))
             .map((platform, index) => (
               <motion.div key={platform.code} variants={itemVariants}>
-                <PlatformCard 
-                  platform={platform} 
-                  index={index} 
+                <PlatformCard
+                  platform={platform}
+                  index={index}
                   trendingItems={trendingData[platform.code] || []}
                 />
               </motion.div>
@@ -955,9 +954,9 @@ export default function Home() {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">关键词云图</h2>
         </div>
-        
+
         {allDataLoaded ? (
-          <WordCloudVisualization 
+          <WordCloudVisualization
             trendingData={trendingData}
           />
         ) : (
@@ -975,12 +974,12 @@ export default function Home() {
       <section className="mb-24">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">热点聚合分析</h2>
-          
+
           {!allDataLoaded && (
             <div className="w-full md:w-auto flex items-center gap-3">
               <div className="flex-grow md:w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                <div 
-                  className="bg-primary-600 h-2.5 rounded-full" 
+                <div
+                  className="bg-primary-600 h-2.5 rounded-full"
                   style={{ width: `${dataLoadProgress}%`, transition: "width 0.5s ease-in-out" }}
                 ></div>
               </div>
@@ -989,11 +988,11 @@ export default function Home() {
               </span>
               </div>
             )}
-            
+
           {allDataLoaded && (
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                      <button 
+                      <button
                   onClick={() => setAnalysisView('topics')}
                         className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                     analysisView === 'topics' 
@@ -1003,7 +1002,7 @@ export default function Home() {
                       >
                   主题分析
                       </button>
-                      <button 
+                      <button
                   onClick={() => setAnalysisView('platforms')}
                         className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                     analysisView === 'platforms' 
@@ -1024,9 +1023,9 @@ export default function Home() {
                   数据可视化
                       </button>
                     </div>
-              
+
               <div className="relative inline-block">
-                <button 
+                <button
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
                   onClick={() => {
                     const newTimeRange = timeRange === '24h' ? 'week' : timeRange === 'week' ? 'month' : '24h';
@@ -1047,7 +1046,7 @@ export default function Home() {
             </div>
           )}
                   </div>
-                  
+
         {!allDataLoaded ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-12 flex flex-col items-center justify-center border border-gray-100 dark:border-gray-700">
             <LoadingSpinner size="lg" className="mb-4" />
@@ -1063,23 +1062,23 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 热门关键词 */}
                 {renderHotKeywords()}
-                
+
                 {/* 热点主题分布 */}
                 {renderTopicDistribution()}
               </div>
             )}
-            
+
             {/* 平台对比视图 */}
             {analysisView === 'platforms' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 平台热度排行 */}
                 {renderPlatformRankings()}
-                
+
                 {/* 热点时间分布 */}
                 {renderTimeDistribution()}
               </div>
             )}
-            
+
             {/* 数据可视化 */}
             {analysisView === 'visualization' && (
               <div className="space-y-6">
@@ -1100,10 +1099,10 @@ export default function Home() {
               新功能
             </span>
           </h2>
-          
+
           <div>
-            <a 
-              href="#" 
+            <a
+              href="#"
               className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
             >
               了解更多
@@ -1113,7 +1112,7 @@ export default function Home() {
             </a>
           </div>
         </div>
-        
+
         {allDataLoaded ? (
           <TrendPrediction trendingData={trendingData} />
         ) : (
@@ -1126,7 +1125,7 @@ export default function Home() {
           </div>
         )}
       </section>
-      
+
       {/* 跨平台热点 */}
       <section className="mb-24">
         <div className="flex items-center justify-between mb-8">
@@ -1137,7 +1136,7 @@ export default function Home() {
             </span>
           </h2>
         </div>
-        
+
         {allDataLoaded ? (
           renderCrossPlatformTopics()
         ) : (
@@ -1158,11 +1157,11 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.5, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: 20 }}
-            transition={{ 
+            transition={{
               type: "spring",
               stiffness: 260,
               damping: 20,
-              duration: 0.3 
+              duration: 0.3
             }}
             onClick={scrollToTop}
             className="fixed right-8 bottom-8 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg hover:shadow-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
@@ -1185,11 +1184,11 @@ export default function Home() {
 function formatNumber(value: string): string {
   const num = parseInt(value);
   if (isNaN(num)) return value;
-  
+
   if (num >= 10000) {
     return (num / 10000).toFixed(1) + '万';
   }
-  
+
   return num.toLocaleString();
 }
 
@@ -1198,26 +1197,26 @@ function adjustColor(color: string, amount: number): string {
   // 如果是十六进制颜色
   if (color.startsWith('#')) {
     let hex = color.slice(1);
-    
+
     // 将3位颜色转换为6位
     if (hex.length === 3) {
       hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
-    
+
     // 转换为RGB
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
     const b = parseInt(hex.slice(4, 6), 16);
-    
+
     // 调整RGB值
     const newR = Math.max(0, Math.min(255, r + amount));
     const newG = Math.max(0, Math.min(255, g + amount));
     const newB = Math.max(0, Math.min(255, b + amount));
-    
+
     // 转回十六进制
     return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
   }
-  
+
   // 返回原始颜色
   return color;
 }

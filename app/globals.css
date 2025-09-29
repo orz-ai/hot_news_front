@@ -14,6 +14,54 @@
   }
 }
 
+/* 高对比度模式支持 */
+@media (prefers-contrast: more) {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+  
+  .dark {
+    --background: #000000;
+    --foreground: #ffffff;
+  }
+  
+  /* 增强文本对比度 */
+  body {
+    color: var(--foreground);
+  }
+  
+  /* 增强边框对比度 */
+  .border, [class*="border-"] {
+    border-color: var(--foreground) !important;
+    border-width: 2px !important;
+  }
+  
+  /* 增强按钮对比度 */
+  button, [role="button"] {
+    border: 2px solid currentColor !important;
+  }
+  
+  /* 增强链接对比度 */
+  a:not(.btn) {
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+  }
+  
+  /* 增强焦点状态对比度 */
+  :focus {
+    outline: 3px solid #0000FF !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* 增强输入框对比度 */
+  input, select, textarea {
+    border: 2px solid var(--foreground) !important;
+    background-color: var(--background) !important;
+    color: var(--foreground) !important;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -68,5 +116,19 @@ body {
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* 减少动画效果（响应用户的减少动画偏好设置） */
+@media (prefers-reduced-motion) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .rotating-sphere {
+    animation: none !important;
   }
 }

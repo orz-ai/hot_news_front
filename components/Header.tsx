@@ -213,13 +213,14 @@ export default function Header() {
         transform: visible ? "translateY(0)" : "translateY(-100%)"
       }}
       transition={{ duration: 0.3 }}
+      role="banner"
     >
       <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
         {/* Logo区域和搜索框 */}
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href="/" className="flex items-center gap-2 group" aria-label="热点速览首页">
               <div className="w-10 h-10 flex-shrink-0 rounded-md overflow-hidden">
                 <img src="/android-chrome-192x192.png" alt="热点速览" className="w-full h-full object-cover" />
               </div>
@@ -231,7 +232,7 @@ export default function Header() {
           </div>
 
           {/* 桌面导航 - 仅在中等屏幕以上显示 */}
-          <nav className="hidden md:flex justify-center mx-auto">
+          <nav className="hidden md:flex justify-center mx-auto" aria-label="主导航">
             <NavMenu navItems={navItems} pathname={pathname} />
           </nav>
 
@@ -258,9 +259,12 @@ export default function Header() {
                     onFocus={() => setSearchFocused(true)}
                     onChange={handleSearchChange}
                     value={searchQuery}
+                    aria-label="搜索热点内容"
+                    aria-expanded={searchFocused && searchResults.length > 0}
+                    aria-controls={searchFocused && searchResults.length > 0 ? "search-results" : undefined}
                   />
                   <div className="absolute right-3 text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                     </svg>
                   </div>
@@ -273,6 +277,9 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
                     className="absolute left-0 right-0 mt-2 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-50 max-h-[70vh] overflow-y-auto custom-scrollbar"
+                    id="search-results"
+                    role="listbox"
+                    aria-label="搜索结果列表"
                   >
                     <div className="px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                       搜索结果 ({searchResults.length})
@@ -292,6 +299,15 @@ export default function Header() {
                           key={index}
                           className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 group transition-colors duration-150 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                           onClick={() => handleResultClick(result)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleResultClick(result);
+                            }
+                          }}
+                          tabIndex={0}
+                          role="option"
+                          aria-selected="false"
                         >
                           <div className="flex items-start gap-3">
                             {platformCode && platform && (
@@ -302,6 +318,7 @@ export default function Header() {
                                   color: platform.color,
                                   border: `1px solid ${platform.color}40`
                                 }}
+                                aria-hidden="true"
                               >
                                 <span className="text-xs font-bold">{platform.name.substring(0, 2)}</span>
                                 {ranking > 0 && (
@@ -370,9 +387,12 @@ export default function Header() {
                 onFocus={() => setSearchFocused(true)}
                 onChange={handleSearchChange}
                 value={searchQuery}
+                aria-label="搜索热点内容"
+                aria-expanded={searchFocused && searchResults.length > 0}
+                aria-controls={searchFocused && searchResults.length > 0 ? "mobile-search-results" : undefined}
               />
               <div className="absolute right-3 text-gray-400 dark:text-gray-500 transition-colors duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -385,6 +405,9 @@ export default function Header() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
                 className="absolute left-0 right-0 mt-2 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-50 max-h-[60vh] overflow-y-auto custom-scrollbar"
+                id="mobile-search-results"
+                role="listbox"
+                aria-label="搜索结果列表"
               >
                 <div className="px-4 py-2 text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   搜索结果 ({searchResults.length})
@@ -404,6 +427,15 @@ export default function Header() {
                       key={index}
                       className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 group transition-colors duration-150 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                       onClick={() => handleResultClick(result)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleResultClick(result);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="option"
+                      aria-selected="false"
                     >
                       <div className="flex items-start gap-3">
                         {platformCode && platform && (
@@ -414,6 +446,7 @@ export default function Header() {
                               color: platform.color,
                               border: `1px solid ${platform.color}40`
                             }}
+                            aria-hidden="true"
                           >
                             <span className="text-xs font-bold">{platform.name.substring(0, 2)}</span>
                             {ranking > 0 && (
@@ -481,8 +514,9 @@ export default function Header() {
                     ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20 dark:border-primary-400/20'
                     : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent'
                 }`}
+                aria-current={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)) ? 'page' : undefined}
               >
-                <div className="flex items-center justify-center mb-1">
+                <div className="flex items-center justify-center mb-1" aria-hidden="true">
                   {item.icon}
                 </div>
                 <span className="whitespace-nowrap text-center">{item.label}</span>
@@ -540,7 +574,7 @@ function NavMenu({ navItems, pathname }: { navItems: any[], pathname: string }) 
   };
 
   return (
-    <div className="relative inline-flex bg-gray-50/80 dark:bg-gray-800/40 rounded-2xl p-1.5 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50 shadow-inner">
+    <div className="relative inline-flex bg-gray-50/80 dark:bg-gray-800/40 rounded-2xl p-1.5 backdrop-blur-sm border border-gray-100 dark:border-gray-700/50 shadow-inner" role="navigation">
       <div className="flex items-center">
         {navItems.map((item, index) => (
           <Link 
@@ -554,8 +588,9 @@ function NavMenu({ navItems, pathname }: { navItems: any[], pathname: string }) 
             }`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
+            aria-current={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)) ? 'page' : undefined}
           >
-            <span className="mr-2">{item.icon}</span>
+            <span className="mr-2" aria-hidden="true">{item.icon}</span>
             {item.label}
           </Link>
         ))}
@@ -577,6 +612,7 @@ function NavMenu({ navItems, pathname }: { navItems: any[], pathname: string }) 
           damping: 30,
           mass: 1
         }}
+        aria-hidden="true"
       />
     </div>
   );
