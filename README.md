@@ -1,5 +1,9 @@
 后端项目戳这里：[热点速览](https://github.com/orz-ai/hot_news)
 
+线上地址：[热点速览](https://news.orz.ai/)
+
+中文文档 | [English](README_EN.md)
+
 # 热点速览 - 全网热点聚合平台
 
 热点速览是一个使用 Next.js, TypeScript, Tailwind CSS 和 Framer Motion 构建的现代化热点内容聚合平台。它汇聚了来自 17 个主流平台的热门内容，包括社交媒体、新闻资讯、技术社区、视频平台等多种类型，让用户能够快速了解全网热点。
