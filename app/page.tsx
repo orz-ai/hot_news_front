@@ -11,11 +11,10 @@ import TrendVisualization from "../components/TrendVisualization";
 import WordCloudVisualization from "../components/WordCloudVisualization";
 import TrendPrediction from "../components/TrendPrediction";
 import TopicHeatVisualization from "../components/TopicHeatVisualization";
+import SettingsModal from "../components/SettingsModal";
+import { useSettings } from "../hooks/useSettings";
 import { fetchTrendingData, fetchAnalysisData, fetchPlatformComparisonData, fetchCrossPlatformData, fetchMultiPlatformData } from "../utils/api";
 import { ApiResponse, PlatformType, TrendingItem as TrendingItemType, HotKeyword, TopicDistribution, RelatedTopicGroup, PlatformRanking, TimeDistribution, CommonTopic } from "../types";
-
-// Featured platforms to show on the homepage
-const FEATURED_PLATFORMS: PlatformType[] = ['baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github'];
 
 const ALL_PLATFORMS: PlatformType[] = [
   'baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github', '36kr',
@@ -93,6 +92,10 @@ const TOPIC_CATEGORIES = [
 ];
 
 export default function Home() {
+  // 使用设置Hook
+  const { settings, saveSettings, getFeaturedPlatforms } = useSettings();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const [trendingData, setTrendingData] = useState<Record<PlatformType, TrendingItemType[]>>({} as Record<PlatformType, TrendingItemType[]>);
   const [loading, setLoading] = useState<Record<PlatformType, boolean>>({} as Record<PlatformType, boolean>);
   const [allDataLoaded, setAllDataLoaded] = useState(false);
@@ -102,6 +105,27 @@ export default function Home() {
   const [timeRange, setTimeRange] = useState('24h');
   const [analysisView, setAnalysisView] = useState('topics');
   const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // 获取用户设置的精选平台 - 现在是缓存的值而不是函数调用
+  const featuredPlatforms = getFeaturedPlatforms;
+
+  // 根据用户设置的顺序对平台进行排序
+  const sortedPlatforms = useMemo(() => {
+    const platformsToShow = PLATFORMS.filter(platform => featuredPlatforms.includes(platform.code));
+
+    // 根据设置中的平台顺序进行排序
+    return platformsToShow.sort((a, b) => {
+      const indexA = settings.platformOrder.indexOf(a.code);
+      const indexB = settings.platformOrder.indexOf(b.code);
+
+      // 如果平台不在排序列表中，放到最后
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+
+      return indexA - indexB;
+    });
+  }, [featuredPlatforms, settings.platformOrder]);
 
   // 分析数据状态
   const [analysisData, setAnalysisData] = useState<{
@@ -148,20 +172,20 @@ export default function Home() {
 
   // 初始化加载状态
   useEffect(() => {
-    const initialLoadingState = FEATURED_PLATFORMS.reduce((acc, platform) => {
+    const initialLoadingState = featuredPlatforms.reduce((acc, platform) => {
       acc[platform] = true;
       return acc;
     }, {} as Record<PlatformType, boolean>);
 
     setLoading(initialLoadingState);
-  }, []);
+  }, [featuredPlatforms]);
 
   // 获取所有平台数据
   useEffect(() => {
     const fetchData = async () => {
       try {
         // 只获取首页需要显示的精选平台数据，而不是所有平台
-        const response = await fetchMultiPlatformData(FEATURED_PLATFORMS);
+        const response = await fetchMultiPlatformData(featuredPlatforms);
 
         // 更新每个平台的数据和加载状态
         let loadedCount = 0;
@@ -186,11 +210,11 @@ export default function Home() {
         });
 
         // 更新加载进度
-        const progress = Math.round((loadedCount / FEATURED_PLATFORMS.length) * 100);
+        const progress = Math.round((loadedCount / featuredPlatforms.length) * 100);
         setDataLoadProgress(progress);
 
         // 如果所有精选平台都已加载，设置allDataLoaded为true
-        if (loadedCount === FEATURED_PLATFORMS.length) {
+        if (loadedCount === featuredPlatforms.length) {
           setAllDataLoaded(true);
         }
       } catch (error) {
@@ -198,7 +222,7 @@ export default function Home() {
 
         // 如果出错，将所有平台的加载状态设为false
         const updatedLoadingState = { ...loading };
-        FEATURED_PLATFORMS.forEach(platform => {
+        featuredPlatforms.forEach(platform => {
           updatedLoadingState[platform] = false;
         });
         setLoading(updatedLoadingState);
@@ -206,7 +230,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, []);
+  }, [featuredPlatforms]);
 
   // 获取分析数据
   useEffect(() => {
@@ -367,7 +391,7 @@ export default function Home() {
     if (Object.keys(trendingData).length < 2) return [];
 
     // 查找跨平台的相似内容
-    const trends: Array<{topic: string, platforms: string[], totalHeat: number, matches: TrendingItemType[]}> = [];
+    const trends: Array<{ topic: string, platforms: string[], totalHeat: number, matches: TrendingItemType[] }> = [];
     const processedTitles = new Set();
 
     // 简单的相似度匹配（实际项目应使用更复杂的文本相似度算法）
@@ -378,7 +402,7 @@ export default function Home() {
         .filter(w => w.length >= 2)
         .map(w => w.toLowerCase());
 
-      const matches: Array<{platform: string, item: TrendingItemType, similarity: number}> = [];
+      const matches: Array<{ platform: string, item: TrendingItemType, similarity: number }> = [];
 
       // 检查每个平台的内容
       Object.entries(trendingData).forEach(([platform, items]) => {
@@ -466,7 +490,7 @@ export default function Home() {
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">全网热门关键词</h3>
-          </div>
+      </div>
 
       <div className="p-6">
         {analysisData.isLoading ? (
@@ -482,35 +506,35 @@ export default function Home() {
             {analysisData.hotKeywords.map((keyword, index) => {
               // 根据权重选择样式
               const size = keyword.weight >= 0.8 ? 'lg' :
-                          keyword.weight >= 0.5 ? 'md' : 'sm';
+                keyword.weight >= 0.5 ? 'md' : 'sm';
               const randomCategory = TOPIC_CATEGORIES[index % TOPIC_CATEGORIES.length];
-                          return (
-                                  <span
+              return (
+                <span
                   key={keyword.text}
                   className={`inline-block px-3 py-1.5 rounded-full text-${size} font-medium`}
-                                    style={{
+                  style={{
                     backgroundColor: `${randomCategory.color}15`,
                     color: randomCategory.color
-                                    }}
-                                  >
+                  }}
+                >
                   {keyword.text}
-                                  </span>
-                          );
-                        })}
-                    </div>
+                </span>
+              );
+            })}
+          </div>
         )}
-                  </div>
-                </div>
+      </div>
+    </div>
   );
 
   // 主题分析视图 - 主题分布组件 - 更新为使用API数据
   const renderTopicDistribution = () => (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
-                  <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">热点主题分布</h3>
-                  </div>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">热点主题分布</h3>
+      </div>
 
-                  <div className="p-6">
+      <div className="p-6">
         {analysisData.isLoading ? (
           <div className="flex justify-center py-8">
             <LoadingSpinner size="md" />
@@ -521,81 +545,81 @@ export default function Home() {
           </div>
         ) : (
           <>
-                    <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-2 gap-6 mb-6">
               {analysisData.topicDistribution.slice(0, 4).map((topic, index) => {
                 const topicCategory = TOPIC_CATEGORIES.find(t => t.name === topic.category) || TOPIC_CATEGORIES[index % TOPIC_CATEGORIES.length];
                 return (
                   <div key={topic.category} className="flex flex-col">
-                          <div className="flex justify-between items-center mb-2">
+                    <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium" style={{ color: topicCategory.color }}>
                         {topic.category}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {topic.percentage.toFixed(1)}%
-                            </span>
-                          </div>
-                          <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full transition-all duration-1000 ease-out"
-                              style={{
-                                width: `${topic.percentage}%`,
-                          backgroundColor: topicCategory.color
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                );
-              })}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {topic.percentage.toFixed(1)}%
+                      </span>
                     </div>
-
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">相关主题词组</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {analysisData.relatedTopicGroups.map((group, index) => (
-                          <div
-                            key={index}
-                            className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg border border-gray-100 dark:border-gray-700"
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                    {group.words.map((word, i) => (
-                                <span
-                                  key={i}
-                                  className="font-medium text-sm"
-                                  style={{
-                                    color: TOPIC_CATEGORIES[i % TOPIC_CATEGORIES.length].color
-                                  }}
-                                >
-                        {word}{i < group.words.length - 1 ? ' + ' : ''}
-                                </span>
-                              ))}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex-grow h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-primary-500"
-                        style={{ width: `${Math.min((group.co_occurrence / 8) * 100, 100)}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {group.co_occurrence}次共现
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-          </>
-        )}
+                    <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full transition-all duration-1000 ease-out"
+                        style={{
+                          width: `${topic.percentage}%`,
+                          backgroundColor: topicCategory.color
+                        }}
+                      ></div>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">相关主题词组</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {analysisData.relatedTopicGroups.map((group, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg border border-gray-100 dark:border-gray-700"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {group.words.map((word, i) => (
+                      <span
+                        key={i}
+                        className="font-medium text-sm"
+                        style={{
+                          color: TOPIC_CATEGORIES[i % TOPIC_CATEGORIES.length].color
+                        }}
+                      >
+                        {word}{i < group.words.length - 1 ? ' + ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-grow h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary-500"
+                        style={{ width: `${Math.min((group.co_occurrence / 8) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {group.co_occurrence}次共现
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 
   // 平台热度排行组件 - 更新为使用API数据
   const renderPlatformRankings = () => (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
-                  <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">平台热度排行</h3>
-                  </div>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">平台热度排行</h3>
+      </div>
 
-                  <div className="p-6">
+      <div className="p-6">
         {platformComparisonData.isLoading ? (
           <div className="flex justify-center py-8">
             <LoadingSpinner size="md" />
@@ -605,150 +629,149 @@ export default function Home() {
             暂无平台排名数据
           </div>
         ) : (
-                    <div className="space-y-5">
+          <div className="space-y-5">
             {platformComparisonData.platformRankings.slice(0, 8).map((platform) => {
               const platformInfo = PLATFORMS.find(p => p.code === platform.platform);
               return (
                 <div key={platform.platform} className="group">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div
-                              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white font-medium shadow-sm group-hover:shadow-md transition-all duration-300"
-                              style={{
+                  <div className="flex items-center gap-3 mb-2">
+                    <div
+                      className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white font-medium shadow-sm group-hover:shadow-md transition-all duration-300"
+                      style={{
                         background: `linear-gradient(135deg, ${platformInfo?.color || '#3b76ea'}, ${adjustColor(platformInfo?.color || '#3b76ea', -20)})`,
-                                transform: "translateZ(0)"
-                              }}
-                            >
+                        transform: "translateZ(0)"
+                      }}
+                    >
                       {platform.rank}
-                            </div>
+                    </div>
 
-                            <h4 className="text-base font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    <h4 className="text-base font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {platformInfo?.name || platform.platform}
-                            </h4>
+                    </h4>
 
-                            <div className="ml-auto flex gap-2 items-center">
-                              <span
-                                className={`text-xs px-2 py-0.5 rounded-full flex items-center ${
-                          platform.trend > 0 
-                                    ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
-                                    : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                                }`}
-                              >
+                    <div className="ml-auto flex gap-2 items-center">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full flex items-center ${platform.trend > 0
+                          ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                          : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                          }`}
+                      >
                         {platform.trend > 0 ? '+' : ''}{platform.trend.toFixed(1)}%
-                              </span>
+                      </span>
 
-                              <span
-                                className="text-sm px-2.5 py-1 rounded-full"
-                                style={{
+                      <span
+                        className="text-sm px-2.5 py-1 rounded-full"
+                        style={{
                           backgroundColor: `${platformInfo?.color || '#3b76ea'}15`,
                           color: platformInfo?.color || '#3b76ea'
-                                }}
-                              >
+                        }}
+                      >
                         排名 {platform.rank}
-                              </span>
-                            </div>
-                          </div>
+                      </span>
+                    </div>
+                  </div>
 
-                          <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className="h-full transition-all duration-1000 ease-out"
-                              style={{
+                  <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-1000 ease-out"
+                      style={{
                         width: `${((platformComparisonData.platformRankings.length - platform.rank + 1) / platformComparisonData.platformRankings.length) * 100}%`,
                         background: `linear-gradient(to right, ${platformInfo?.color || '#3b76ea'}, ${adjustColor(platformInfo?.color || '#3b76ea', 20)})`
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-              );
-            })}
-                    </div>
-        )}
+                      }}
+                    ></div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 
   // 热点时间分布组件 - 更新为使用API数据
   const renderTimeDistribution = () => (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
-                  <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">热点时间分布</h3>
-                  </div>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">热点时间分布</h3>
+      </div>
 
-                  <div className="p-6">
+      <div className="p-6">
         {platformComparisonData.isLoading ? (
           <div className="flex justify-center py-8">
             <LoadingSpinner size="md" />
           </div>
         ) : (
-                    <div className="flex flex-col gap-8">
-                      {/* 时间段分布 */}
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">一天内热点发布时段分布</h4>
+          <div className="flex flex-col gap-8">
+            {/* 时间段分布 */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">一天内热点发布时段分布</h4>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {Object.entries(platformComparisonData.timeDistribution).map(([timeKey, data]) => (
-                            <div
-                              key={timeKey}
-                              className="bg-gray-50 dark:bg-gray-800/60 p-4 rounded-lg border border-gray-100 dark:border-gray-700"
-                            >
-                              <div className="text-center">
-                                <span className="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-1">
-                                  {data.percentage.toFixed(1)}%
-                                </span>
-                                <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                  {data.label}
-                                </span>
-                                <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-primary-600"
-                                    style={{ width: `${data.percentage}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                  <div
+                    key={timeKey}
+                    className="bg-gray-50 dark:bg-gray-800/60 p-4 rounded-lg border border-gray-100 dark:border-gray-700"
+                  >
+                    <div className="text-center">
+                      <span className="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-1">
+                        {data.percentage.toFixed(1)}%
+                      </span>
+                      <span className="block text-sm text-gray-500 dark:text-gray-400">
+                        {data.label}
+                      </span>
+                      <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary-600"
+                          style={{ width: `${data.percentage}%` }}
+                        ></div>
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                      {/* 平台更新频率信息 */}
-                      <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">平台更新频率</h4>
+            {/* 平台更新频率信息 */}
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">平台更新频率</h4>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {platformComparisonData.platformRankings.slice(0, 6).map((platform) => {
                   const platformInfo = PLATFORMS.find(p => p.code === platform.platform);
 
-                            return (
-                              <div
+                  return (
+                    <div
                       key={platform.platform}
-                                className="flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-750"
-                              >
-                                <span
-                                  className="w-2 h-2 rounded-full"
+                      className="flex items-center gap-2 text-sm py-2 px-3 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-750"
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: platformInfo?.color || '#3b76ea' }}
-                                ></span>
+                      ></span>
                       <span className="text-gray-700 dark:text-gray-300">{platformInfo?.name || platform.platform}</span>
-                                <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-                                  {platformInfo?.updateFrequency || '未知'}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                        {platformInfo?.updateFrequency || '未知'}
+                      </span>
                     </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         )}
-                  </div>
-                </div>
+      </div>
+    </div>
   );
 
   // 跨平台热点视图 - 更新为使用API数据
   const renderCrossPlatformTopics = () => (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
-                <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">跨平台热点事件</h3>
-                </div>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">跨平台热点事件</h3>
+      </div>
 
-                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+      <div className="divide-y divide-gray-100 dark:divide-gray-700">
         {crossPlatformData.isLoading ? (
           <div className="p-12 flex justify-center">
             <LoadingSpinner size="lg" />
@@ -759,64 +782,64 @@ export default function Home() {
           </div>
         ) : (
           crossPlatformData.commonTopics.map((topic, index) => (
-                      <div key={index} className="p-6">
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-                          <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+            <div key={index} className="p-6">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">
                   {topic.title}
-                          </h4>
+                </h4>
 
-                          <div className="flex items-center gap-2 ml-auto">
-                            <span className="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-2.5 py-1 rounded-full">
+                <div className="flex items-center gap-2 ml-auto">
+                  <span className="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-2.5 py-1 rounded-full">
                     {topic.platforms_count}个平台
-                            </span>
+                  </span>
                   {topic.heat > 0 && (
-                            <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2.5 py-1 rounded-full">
+                    <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2.5 py-1 rounded-full">
                       热度 {formatNumber(topic.heat.toString())}
-                            </span>
+                    </span>
                   )}
-                          </div>
-                        </div>
+                </div>
+              </div>
 
-                        <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {topic.platforms.map(platformCode => {
-                            const platform = PLATFORMS.find(p => p.code === platformCode);
-                            return (
-                              <span
-                                key={platformCode}
-                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                                style={{
-                                  backgroundColor: `${platform?.color || '#3b76ea'}15`,
-                                  color: platform?.color || '#3b76ea'
-                                }}
-                              >
-                                {platform?.name || platformCode}
-                              </span>
-                            );
-                          })}
-                        </div>
+                  const platform = PLATFORMS.find(p => p.code === platformCode);
+                  return (
+                    <span
+                      key={platformCode}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: `${platform?.color || '#3b76ea'}15`,
+                        color: platform?.color || '#3b76ea'
+                      }}
+                    >
+                      {platform?.name || platformCode}
+                    </span>
+                  );
+                })}
+              </div>
 
-                        <div className="space-y-3">
+              <div className="space-y-3">
                 {topic.related_items.slice(0, 3).map((item, i) => {
                   const platform = PLATFORMS.find(p => p.code === item.platform);
                   return (
-                            <a
-                              key={i}
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-gray-100 dark:border-gray-700"
-                            >
-                              <div className="flex gap-3">
+                    <a
+                      key={i}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-gray-100 dark:border-gray-700"
+                    >
+                      <div className="flex gap-3">
                         <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
                           style={{ backgroundColor: platform?.color || '#3b76ea' }}>
                           <span className="text-white text-xs font-bold">
                             {platform?.name?.substring(0, 1) || item.platform.substring(0, 1)}
                           </span>
                         </div>
-                                <div className="flex-grow">
-                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {item.title}
-                                  </p>
+                        <div className="flex-grow">
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {item.title}
+                          </p>
 
                           {item.similarity !== undefined && item.similarity > 0 && (
                             <div className="mt-1 flex items-center gap-2">
@@ -830,23 +853,23 @@ export default function Home() {
                                 相似度 {Math.round(item.similarity * 100)}%
                               </span>
                             </div>
-                                  )}
-                                </div>
+                          )}
+                        </div>
 
-                                <div className="flex-shrink-0 flex items-center text-gray-400 dark:text-gray-500">
-                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                </div>
-                              </div>
-                            </a>
-                  );
-                })}
+                        <div className="flex-shrink-0 flex items-center text-gray-400 dark:text-gray-500">
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 
@@ -914,6 +937,16 @@ export default function Home() {
             >
               了解更多
             </Link>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="px-8 py-4 bg-gradient-to-r from-secondary-600 to-secondary-700 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-secondary-500/20 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              设置
+            </button>
           </div>
         </motion.div>
       </section>
@@ -936,16 +969,16 @@ export default function Home() {
           animate="show"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {PLATFORMS.filter(platform => FEATURED_PLATFORMS.includes(platform.code))
-            .map((platform, index) => (
-              <motion.div key={platform.code} variants={itemVariants}>
-                <PlatformCard
-                  platform={platform}
-                  index={index}
-                  trendingItems={trendingData[platform.code] || []}
-                />
-              </motion.div>
-            ))}
+          {sortedPlatforms.map((platform, index) => (
+            <motion.div key={platform.code} variants={itemVariants}>
+              <PlatformCard
+                platform={platform}
+                index={index}
+                trendingItems={trendingData[platform.code] || []}
+                maxItems={settings.newsDisplayCount}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       </section>
 
@@ -986,43 +1019,40 @@ export default function Home() {
               <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                 {dataLoadProgress}% 已加载
               </span>
-              </div>
-            )}
+            </div>
+          )}
 
           {allDataLoaded && (
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                      <button
+                <button
                   onClick={() => setAnalysisView('topics')}
-                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                    analysisView === 'topics' 
-                      ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400' 
-                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${analysisView === 'topics'
+                    ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                >
                   主题分析
-                      </button>
-                      <button
+                </button>
+                <button
                   onClick={() => setAnalysisView('platforms')}
-                        className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                    analysisView === 'platforms' 
-                      ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400' 
-                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                      >
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${analysisView === 'platforms'
+                    ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                >
                   平台对比
-                      </button>
+                </button>
                 <button
                   onClick={() => setAnalysisView('visualization')}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                    analysisView === 'visualization' 
-                      ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400' 
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${analysisView === 'visualization'
+                    ? 'bg-white dark:bg-gray-700 shadow-sm text-primary-600 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                    }`}
                 >
                   数据可视化
-                      </button>
-                    </div>
+                </button>
+              </div>
 
               <div className="relative inline-block">
                 <button
@@ -1045,7 +1075,7 @@ export default function Home() {
               </div>
             </div>
           )}
-                  </div>
+        </div>
 
         {!allDataLoaded ? (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-12 flex flex-col items-center justify-center border border-gray-100 dark:border-gray-700">
@@ -1053,8 +1083,8 @@ export default function Home() {
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">正在处理全网热点数据</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               正在从{ALL_PLATFORMS.length}个平台获取数据并进行深度分析...
-                  </p>
-                </div>
+            </p>
+          </div>
         ) : (
           <>
             {/* 主题分析视图 */}
@@ -1091,7 +1121,7 @@ export default function Home() {
       </section>
 
       {/* 热点趋势预测 - New Feature Section */}
-      <section className="mb-24">
+      {/* <section className="mb-24">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             热点趋势预测
@@ -1124,7 +1154,7 @@ export default function Home() {
             </p>
           </div>
         )}
-      </section>
+      </section> */}
 
       {/* 跨平台热点 */}
       <section className="mb-24">
@@ -1176,6 +1206,14 @@ export default function Home() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* 设置弹窗 */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={settings}
+        onSettingsChange={saveSettings}
+      />
     </>
   );
 }

@@ -11,9 +11,10 @@ interface PlatformCardProps {
   platform: PlatformInfo;
   index: number;
   trendingItems?: TrendingItemType[]; // Add optional trendingItems prop
+  maxItems?: number; // 添加最大显示数量限制
 }
 
-export default function PlatformCard({ platform, index, trendingItems: propTrendingItems }: PlatformCardProps) {
+export default function PlatformCard({ platform, index, trendingItems: propTrendingItems, maxItems = 10 }: PlatformCardProps) {
   const [trendingItems, setTrendingItems] = useState<TrendingItemType[]>([]);
   const [loading, setLoading] = useState(propTrendingItems ? false : true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -22,7 +23,7 @@ export default function PlatformCard({ platform, index, trendingItems: propTrend
   useEffect(() => {
     // 如果有传入的trendingItems，直接使用
     if (propTrendingItems) {
-      setTrendingItems(propTrendingItems.slice(0, 10));
+      setTrendingItems(propTrendingItems.slice(0, maxItems));
       setLoading(false);
       return;
     }
@@ -43,7 +44,7 @@ export default function PlatformCard({ platform, index, trendingItems: propTrend
           // 过滤掉没有标题的项目
           const validItems = platformResponse.data
             .filter(item => item.title && item.title.trim() !== '')
-            .slice(0, 10);
+            .slice(0, maxItems);
           
           // 再次检查过滤后的掘金数据
           if (platform.code === 'juejin') {
@@ -348,4 +349,4 @@ function adjustColor(color: string, amount: number): string {
   
   // 返回原始颜色
   return color;
-} 
+}
