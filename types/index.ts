@@ -88,23 +88,23 @@ export interface PlatformComparisonResponse {
   msg?: string;
 }
 
-export type PlatformType = 
+export type PlatformType =
   | 'baidu'
-  | 'shaoshupai' 
-  | 'weibo' 
-  | 'zhihu' 
-  | '36kr' 
-  | '52pojie' 
-  | 'bilibili' 
-  | 'douban' 
-  | 'hupu' 
-  | 'tieba' 
-  | 'juejin' 
-  | 'douyin' 
-  | 'v2ex' 
-  | 'jinritoutiao' 
-  | 'stackoverflow' 
-  | 'github' 
+  | 'shaoshupai'
+  | 'weibo'
+  | 'zhihu'
+  | '36kr'
+  | '52pojie'
+  | 'bilibili'
+  | 'douban'
+  | 'hupu'
+  | 'tieba'
+  | 'juejin'
+  | 'douyin'
+  | 'v2ex'
+  | 'jinritoutiao'
+  | 'stackoverflow'
+  | 'github'
   | 'hackernews'
   | 'tenxunwang';
 

@@ -11,37 +11,36 @@ interface WordCloudVisualizationProps {
   selectedPlatforms?: PlatformType[];
 }
 
-// 颜色方案
 const CATEGORIES = [
-  { 
-    name: '科技', 
+  {
+    name: '科技',
     color: '#3B82F6',
-    keywords: ['科技', '技术', '数字', '智能', 'AI', '人工智能', '算法', '编程', '开发', '软件', 
-              '互联网', '创新', '电脑', '手机', '平台', '系统', '网络', '设备']
+    keywords: ['科技', '技术', '数字', '智能', 'AI', '人工智能', '算法', '编程', '开发', '软件',
+      '互联网', '创新', '电脑', '手机', '平台', '系统', '网络', '设备']
   },
-  { 
-    name: '娱乐', 
+  {
+    name: '娱乐',
     color: '#8B5CF6',
-    keywords: ['明星', '娱乐', '综艺', '电影', '电视', '剧集', '音乐', '艺人', '演员', '歌手', 
-              '导演', '电视剧', '影片', '节目', '作品', '表演', '爱豆']
+    keywords: ['明星', '娱乐', '综艺', '电影', '电视', '剧集', '音乐', '艺人', '演员', '歌手',
+      '导演', '电视剧', '影片', '节目', '作品', '表演', '爱豆']
   },
-  { 
-    name: '社会', 
+  {
+    name: '社会',
     color: '#EC4899',
-    keywords: ['社会', '事件', '新闻', '政策', '热议', '事故', '热点', '公共', '话题', '民生', 
-              '现象', '问题', '舆论', '讨论']
+    keywords: ['社会', '事件', '新闻', '政策', '热议', '事故', '热点', '公共', '话题', '民生',
+      '现象', '问题', '舆论', '讨论']
   },
-  { 
-    name: '财经', 
+  {
+    name: '财经',
     color: '#F59E0B',
-    keywords: ['财经', '经济', '股市', '基金', '金融', '投资', '理财', '市场', '企业', '公司', 
-              '股票', '销售', '价格', '产业', '商业']
+    keywords: ['财经', '经济', '股市', '基金', '金融', '投资', '理财', '市场', '企业', '公司',
+      '股票', '销售', '价格', '产业', '商业']
   },
-  { 
-    name: '体育', 
+  {
+    name: '体育',
     color: '#EF4444',
-    keywords: ['体育', '赛事', '足球', '篮球', '比赛', '运动', '球员', '联赛', '队员', '冠军', 
-              '球队', '战绩', '得分']
+    keywords: ['体育', '赛事', '足球', '篮球', '比赛', '运动', '球员', '联赛', '队员', '冠军',
+      '球队', '战绩', '得分']
   },
 ];
 
@@ -51,14 +50,14 @@ const DEFAULT_CATEGORY = { name: '其他', color: '#6B7280' };
 // 预计算类别匹配函数 - 提高性能
 const getCategoryForKeyword = (text: string) => {
   const lowercaseText = text.toLowerCase();
-  
+
   // 直接检查类别名称
   for (const cat of CATEGORIES) {
     if (lowercaseText.includes(cat.name.toLowerCase())) {
       return cat;
     }
   }
-  
+
   // 检查关键词
   for (const cat of CATEGORIES) {
     for (const kw of cat.keywords) {
@@ -67,7 +66,7 @@ const getCategoryForKeyword = (text: string) => {
       }
     }
   }
-  
+
   return DEFAULT_CATEGORY;
 };
 
@@ -77,8 +76,8 @@ function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null;
-  
-  return function(...args: Parameters<T>) {
+
+  return function (...args: Parameters<T>) {
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
@@ -89,27 +88,27 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
   const [maxWords, setMaxWords] = useState(100);
   const [isMaxWordsOpen, setIsMaxWordsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [apiKeywords, setApiKeywords] = useState<Array<{text: string, weight: number}>>([]);
+  const [apiKeywords, setApiKeywords] = useState<Array<{ text: string, weight: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
   const prevMaxWords = useRef(maxWords);
-  
+
   // 加载API数据
   useEffect(() => {
     const loadKeywordCloudData = async () => {
       try {
         setLoading(true);
-        
+
         const response = await fetchKeywordCloud({
           category: selectedCategory?.toLowerCase(),
           keyword_count: maxWords
         });
-        
+
         if (response.status === 'success') {
-          const categoryData = selectedCategory ? 
-            response.keyword_clouds[selectedCategory.toLowerCase()] : 
+          const categoryData = selectedCategory ?
+            response.keyword_clouds[selectedCategory.toLowerCase()] :
             response.keyword_clouds.all;
-            
+
           setApiKeywords(categoryData || response.keyword_clouds.all || []);
         } else {
           console.error('Failed to fetch keyword cloud data:', response.msg);
@@ -130,7 +129,7 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
       const debouncedLoad = debounce(loadKeywordCloudData, 300);
       debouncedLoad();
     }
-    
+
     prevMaxWords.current = maxWords;
   }, [selectedCategory, maxWords]);
 
@@ -142,20 +141,20 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
 
     // 限制关键词数量
     const limitedKeywords = apiKeywords.slice(0, maxWords);
-    
+
     // 计算权重范围
     const weights = limitedKeywords.map(k => k.weight);
     const maxVal = Math.max(...weights);
     const minVal = Math.min(...weights);
-    
+
     // 字体大小范围
     const minSize = 14;
     const maxSize = 36;
-    
+
     return limitedKeywords.map((keyword) => {
       // 查找类别 - 使用优化后的函数
       const foundCategory = getCategoryForKeyword(keyword.text);
-      
+
       // 计算字体大小 - 使用对数缩放提高视觉效果
       let fontSize;
       if (maxVal === minVal) {
@@ -203,21 +202,21 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
   // 为每个词语计算球面上的位置 - 使用Web Worker或分批计算提高性能
   const spherePositions = useMemo(() => {
     if (!sortedWords.length) return [];
-    
+
     // 限制同时渲染的词语数量，提高性能
     const renderLimit = Math.min(sortedWords.length, 150);
     const visibleWords = sortedWords.slice(0, renderLimit);
-    
+
     return visibleWords.map((word, index) => {
       // 使用黄金角螺旋算法均匀分布点在球面上
       const phi = Math.acos(-1 + (2 * index) / visibleWords.length);
       const theta = Math.PI * (1 + Math.sqrt(5)) * index;
-      
+
       // 球面坐标转换为笛卡尔坐标
       const x = Math.cos(theta) * Math.sin(phi);
       const y = Math.sin(theta) * Math.sin(phi);
       const z = Math.cos(phi);
-      
+
       // 计算词语在球面上的位置
       return {
         ...word,
@@ -231,7 +230,7 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
   // 使用IntersectionObserver延迟加载词云
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
@@ -243,9 +242,9 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
       },
       { threshold: 0.1 }
     );
-    
+
     observer.observe(containerRef.current);
-    
+
     return () => {
       if (containerRef.current) {
         observer.unobserve(containerRef.current);
@@ -262,37 +261,35 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
           </svg>
           热门关键词云图
         </h3>
-        
+
         {/* 控制面板 */}
         <div className="flex flex-wrap gap-3" role="toolbar" aria-label="词云过滤和显示选项">
           {/* 分类过滤 */}
-          <div 
+          <div
             className="flex gap-1.5 bg-gray-50 dark:bg-gray-750 p-1.5 rounded-full shadow-inner overflow-x-auto"
             role="radiogroup"
             aria-label="关键词分类过滤"
           >
             <button
               onClick={() => handleCategoryClick(null)}
-              className={`px-3 py-1.5 text-xs rounded-full transition-all whitespace-nowrap ${
-                selectedCategory === null
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm font-medium'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
+              className={`px-3 py-1.5 text-xs rounded-full transition-all whitespace-nowrap ${selectedCategory === null
+                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
               aria-pressed={selectedCategory === null}
               role="radio"
             >
               全部
             </button>
-            
+
             {CATEGORIES.map(category => (
               <button
                 key={category.name}
                 onClick={() => handleCategoryClick(category.name)}
-                className={`px-3 py-1.5 text-xs rounded-full transition-all whitespace-nowrap ${
-                  selectedCategory === category.name 
-                    ? 'bg-white dark:bg-gray-700 shadow-sm font-medium' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
+                className={`px-3 py-1.5 text-xs rounded-full transition-all whitespace-nowrap ${selectedCategory === category.name
+                  ? 'bg-white dark:bg-gray-700 shadow-sm font-medium'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
                 style={{
                   color: selectedCategory === category.name ? category.color : ''
                 }}
@@ -303,10 +300,10 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
               </button>
             ))}
           </div>
-          
+
           {/* 词数量选择 */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setIsMaxWordsOpen(!isMaxWordsOpen)}
               className="flex items-center gap-1 px-3.5 py-1.5 text-xs bg-gray-50 dark:bg-gray-750 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all shadow-inner"
               aria-haspopup="true"
@@ -317,20 +314,20 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
               </svg>
               <span>显示{maxWords}个</span>
-              <svg 
+              <svg
                 className={`w-3 h-3 ml-1 transition-transform ${isMaxWordsOpen ? 'transform rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
-            
+
             <AnimatePresence>
               {isMaxWordsOpen && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
@@ -343,11 +340,10 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
                   {[50, 100, 150, 200].map(num => (
                     <button
                       key={num}
-                      className={`block w-full px-4 py-2 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                        maxWords === num 
-                          ? 'bg-gray-50 dark:bg-gray-750 text-blue-600 dark:text-blue-400 font-medium' 
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}
+                      className={`block w-full px-4 py-2 text-xs text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${maxWords === num
+                        ? 'bg-gray-50 dark:bg-gray-750 text-blue-600 dark:text-blue-400 font-medium'
+                        : 'text-gray-700 dark:text-gray-300'
+                        }`}
                       onClick={() => handleMaxWordsClick(num)}
                       role="menuitem"
                       aria-current={maxWords === num ? 'true' : 'false'}
@@ -361,9 +357,9 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
           </div>
         </div>
       </div>
-      
+
       {/* 词云可视化 */}
-      <div 
+      <div
         ref={containerRef}
         className="relative h-[350px] rounded-xl bg-white dark:bg-gray-800 overflow-hidden shadow-inner word-cloud-container"
         role="region"
@@ -388,16 +384,16 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
                 const translateX = x * radius;
                 const translateY = y * radius;
                 const translateZ = z * radius;
-                
+
                 // 计算词语的大小，重要的词语更大
                 const importance = index < 5 ? 1.2 : index < 15 ? 1 : 0.8;
-                
+
                 return (
                   <div
                     key={word.text}
                     className="absolute left-1/2 top-1/2 transform-gpu word-item"
                     style={{
-                      transform: `translate(-50%, -50%) translate3d(${translateX}px, ${translateY}px, ${translateZ}px) rotateY(${Math.atan2(x, z)}rad) rotateX(${-Math.atan2(y, Math.sqrt(x*x + z*z))}rad)`,
+                      transform: `translate(-50%, -50%) translate3d(${translateX}px, ${translateY}px, ${translateZ}px) rotateY(${Math.atan2(x, z)}rad) rotateX(${-Math.atan2(y, Math.sqrt(x * x + z * z))}rad)`,
                       fontSize: `${word.fontSize * importance}px`,
                       color: word.color,
                       fontWeight: index < 10 ? 600 : 400,
@@ -410,7 +406,7 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
                 );
               })}
             </div>
-            
+
             {/* 提供可访问的关键词列表，供屏幕阅读器使用 */}
             <div className="sr-only">
               <ul>
@@ -425,7 +421,7 @@ export default function WordCloudVisualization({ trendingData, selectedPlatforms
           </div>
         )}
       </div>
-          
+
       <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center">
         <svg className="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

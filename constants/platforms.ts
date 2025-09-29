@@ -136,5 +136,13 @@ export const PLATFORMS: PlatformInfo[] = [
     contentType: ['科技新闻', '创业', '编程'],
     updateFrequency: '30分钟',
     color: '#ff6600'
+  },
+  {
+    code: 'tenxunwang',
+    name: '腾讯网',
+    description: '中国知名门户网站',
+    contentType: ['新闻', '社会热点', '娱乐', '科技'],
+    updateFrequency: '30分钟',
+    color: '#00a4ff'
   }
-]; 
+];

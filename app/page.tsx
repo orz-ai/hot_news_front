@@ -11,15 +11,16 @@ import TrendVisualization from "../components/TrendVisualization";
 import WordCloudVisualization from "../components/WordCloudVisualization";
 import TrendPrediction from "../components/TrendPrediction";
 import TopicHeatVisualization from "../components/TopicHeatVisualization";
-import SettingsModal from "../components/SettingsModal";
 import { useSettings } from "../hooks/useSettings";
+import { useVersionUpdate } from "../hooks/useVersionUpdate";
+import VersionUpdateModal from "../components/VersionUpdateModal";
 import { fetchTrendingData, fetchAnalysisData, fetchPlatformComparisonData, fetchCrossPlatformData, fetchMultiPlatformData } from "../utils/api";
 import { ApiResponse, PlatformType, TrendingItem as TrendingItemType, HotKeyword, TopicDistribution, RelatedTopicGroup, PlatformRanking, TimeDistribution, CommonTopic } from "../types";
 
 const ALL_PLATFORMS: PlatformType[] = [
   'baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github', '36kr',
   'shaoshupai', 'douban', 'hupu', 'tieba', 'juejin', 'v2ex',
-  'jinritoutiao', 'stackoverflow', 'hackernews'
+  'jinritoutiao', 'stackoverflow', 'hackernews', '52pojie', 'tenxunwang'
 ];
 
 // 动画变体
@@ -38,50 +39,6 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
-// 检测是否是中文字符
-const isChineseChar = (char: string): boolean => {
-  const code = char.charCodeAt(0);
-  return (
-    (code >= 0x4e00 && code <= 0x9fff) || // CJK统一汉字
-    (code >= 0x3400 && code <= 0x4dbf) || // CJK扩展A
-    (code >= 0xf900 && code <= 0xfaff)    // CJK兼容汉字
-  );
-};
-
-// 忽略的常见词
-const COMMON_STOP_WORDS = new Set([
-  '的', '了', '在', '是', '和', '与', '这', '那', '有', '将', '被', '对', '为', '从', '到', '上', '下', '中',
-  '最新', '消息', '热门', '热点', '新闻', '发布', '报道', '揭秘', '曝光', '一个', '什么', '来', '去',
-  '如何', '为什么', '可能', '终于', '突然', '原来', '真的', '官宣', '重磅', '首次', '都', '每',
-  '让', '把', '能', '说', '要', '会', '我', '你', '他', '她', '它', '他们', '她们', '它们',
-
-  // 常见英文单词作为额外过滤
-  'the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'that', 'for', 'you', 'was', 'on',
-  'with', 'as', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by',
-  'but', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'how', 'has',
-  'who', 'will', 'more', 'no', 'would', 'should', 'could', 'if', 'my', 'than', 'first',
-  'been', 'do', 'its', 'their', 'not', 'now', 'after', 'other', 'into', 'just', 'an'
-]);
-
-// 验证是否是有效的中文词
-const isValidChineseWord = (word: string): boolean => {
-  // 长度至少为2
-  if (word.length < 2) return false;
-
-  // 必须全部是中文字符
-  for (let i = 0; i < word.length; i++) {
-    if (!isChineseChar(word[i])) return false;
-  }
-
-  // 不能含有英文字母、数字或特殊字符
-  if (/[a-zA-Z0-9\s.,!?:;'"()[\]{}\/\\<>@#$%^&*+=|~`-]/.test(word)) return false;
-
-  // 不能是停用词
-  if (COMMON_STOP_WORDS.has(word)) return false;
-
-  return true;
-};
-
 // 定义热点主题/分类
 const TOPIC_CATEGORIES = [
   { id: 'tech', name: '科技', color: '#10B981', icon: 'laptop-code', keywords: ['科技', '技术', '创新', '数字', '智能', '研发', 'AI', '人工智能', '算法', '编程'] },
@@ -93,8 +50,10 @@ const TOPIC_CATEGORIES = [
 
 export default function Home() {
   // 使用设置Hook
-  const { settings, saveSettings, getFeaturedPlatforms } = useSettings();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { settings, saveSettings, getFeaturedPlatforms, isLoading: settingsLoading } = useSettings();
+  
+  // 使用版本更新Hook
+  const { showVersionModal, currentVersion, handleCloseVersionModal } = useVersionUpdate();
 
   const [trendingData, setTrendingData] = useState<Record<PlatformType, TrendingItemType[]>>({} as Record<PlatformType, TrendingItemType[]>);
   const [loading, setLoading] = useState<Record<PlatformType, boolean>>({} as Record<PlatformType, boolean>);
@@ -109,23 +68,34 @@ export default function Home() {
   // 获取用户设置的精选平台 - 现在是缓存的值而不是函数调用
   const featuredPlatforms = getFeaturedPlatforms;
 
-  // 根据用户设置的顺序对平台进行排序
-  const sortedPlatforms = useMemo(() => {
-    const platformsToShow = PLATFORMS.filter(platform => featuredPlatforms.includes(platform.code));
+  const displayPlatforms = useMemo(() => {
+    const selectedPlatformCodes = settings.featuredPlatforms || [];
 
-    // 根据设置中的平台顺序进行排序
-    return platformsToShow.sort((a, b) => {
-      const indexA = settings.platformOrder.indexOf(a.code);
-      const indexB = settings.platformOrder.indexOf(b.code);
+    // 从所有平台中筛选出用户选择的平台
+    const selectedPlatforms = PLATFORMS.filter(platform =>
+      selectedPlatformCodes.includes(platform.code)
+    );
 
-      // 如果平台不在排序列表中，放到最后
-      if (indexA === -1 && indexB === -1) return 0;
-      if (indexA === -1) return 1;
-      if (indexB === -1) return -1;
+    // 按照用户设置的顺序排序
+    const orderedPlatforms = selectedPlatforms.sort((a, b) => {
+      const orderA = settings.platformOrder.indexOf(a.code);
+      const orderB = settings.platformOrder.indexOf(b.code);
 
-      return indexA - indexB;
+      // 如果都在排序列表中，按顺序排列
+      if (orderA !== -1 && orderB !== -1) {
+        return orderA - orderB;
+      }
+
+      // 如果只有一个在排序列表中，优先显示在列表中的
+      if (orderA !== -1) return -1;
+      if (orderB !== -1) return 1;
+
+      // 如果都不在排序列表中，保持原顺序
+      return 0;
     });
-  }, [featuredPlatforms, settings.platformOrder]);
+
+    return orderedPlatforms;
+  }, [settings.featuredPlatforms, settings.platformOrder]);
 
   // 分析数据状态
   const [analysisData, setAnalysisData] = useState<{
@@ -170,22 +140,22 @@ export default function Home() {
     isLoading: true
   });
 
-  // 初始化加载状态
   useEffect(() => {
-    const initialLoadingState = featuredPlatforms.reduce((acc, platform) => {
+    const platformCodes = displayPlatforms.map(p => p.code);
+    const initialLoadingState = platformCodes.reduce((acc, platform) => {
       acc[platform] = true;
       return acc;
     }, {} as Record<PlatformType, boolean>);
 
     setLoading(initialLoadingState);
-  }, [featuredPlatforms]);
+  }, [displayPlatforms]);
 
-  // 获取所有平台数据
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const platformCodes = displayPlatforms.map(p => p.code);
         // 只获取首页需要显示的精选平台数据，而不是所有平台
-        const response = await fetchMultiPlatformData(featuredPlatforms);
+        const response = await fetchMultiPlatformData(platformCodes);
 
         // 更新每个平台的数据和加载状态
         let loadedCount = 0;
@@ -199,6 +169,8 @@ export default function Home() {
               ...prev,
               [platformCode]: platformResponse.data
             }));
+          } else {
+            console.log(`平台 ${platformCode} 数据加载失败:`, platformResponse);
           }
 
           setLoading(prev => ({
@@ -210,27 +182,30 @@ export default function Home() {
         });
 
         // 更新加载进度
-        const progress = Math.round((loadedCount / featuredPlatforms.length) * 100);
+        const progress = Math.round((loadedCount / platformCodes.length) * 100);
         setDataLoadProgress(progress);
 
         // 如果所有精选平台都已加载，设置allDataLoaded为true
-        if (loadedCount === featuredPlatforms.length) {
+        if (loadedCount === platformCodes.length) {
           setAllDataLoaded(true);
         }
       } catch (error) {
         console.error('Error fetching platform data:', error);
 
         // 如果出错，将所有平台的加载状态设为false
+        const platformCodes = displayPlatforms.map(p => p.code);
         const updatedLoadingState = { ...loading };
-        featuredPlatforms.forEach(platform => {
+        platformCodes.forEach(platform => {
           updatedLoadingState[platform] = false;
         });
         setLoading(updatedLoadingState);
       }
     };
 
-    fetchData();
-  }, [featuredPlatforms]);
+    if (displayPlatforms.length > 0) {
+      fetchData();
+    }
+  }, [displayPlatforms]);
 
   // 获取分析数据
   useEffect(() => {
@@ -317,7 +292,6 @@ export default function Home() {
       try {
         // 将数据存储到localStorage中
         localStorage.setItem('trendingData', JSON.stringify(trendingData));
-        console.log('热点数据已保存到localStorage，可用于搜索');
       } catch (error) {
         console.error('保存数据到localStorage失败:', error);
       }
@@ -386,104 +360,6 @@ export default function Home() {
     return { platformHotness: hotness, timeBasedTrends: timeFrames };
   }, [trendingData]);
 
-  // 内容交叉关联分析
-  const crossPlatformTrends = useMemo(() => {
-    if (Object.keys(trendingData).length < 2) return [];
-
-    // 查找跨平台的相似内容
-    const trends: Array<{ topic: string, platforms: string[], totalHeat: number, matches: TrendingItemType[] }> = [];
-    const processedTitles = new Set();
-
-    // 简单的相似度匹配（实际项目应使用更复杂的文本相似度算法）
-    const findSimilarTitle = (title: string, threshold = 0.5) => {
-      if (processedTitles.has(title)) return null;
-
-      const titleTokens = title.split(/[\s\!\.\,\:\;\?\(\)\[\]\{\}\"\'\，\。\！\？\：\；\（\）\【\】\「\」]/)
-        .filter(w => w.length >= 2)
-        .map(w => w.toLowerCase());
-
-      const matches: Array<{ platform: string, item: TrendingItemType, similarity: number }> = [];
-
-      // 检查每个平台的内容
-      Object.entries(trendingData).forEach(([platform, items]) => {
-        items.forEach(item => {
-          // 跳过自己
-          if (item.title === title) return;
-          if (processedTitles.has(item.title)) return;
-
-          const itemTokens = (item.title || '').split(/[\s\!\.\,\:\;\?\(\)\[\]\{\}\"\'\，\。\！\？\：\；\（\）\【\】\「\」]/)
-            .filter(w => w.length >= 2)
-            .map(w => w.toLowerCase());
-
-          // 计算共同词的数量
-          const commonTokens = titleTokens.filter(token =>
-            itemTokens.some(itemToken =>
-              itemToken.includes(token) || token.includes(itemToken)
-            )
-          );
-
-          // 计算相似度（简单的Jaccard相似度）
-          const similarity = commonTokens.length /
-            (titleTokens.length + itemTokens.length - commonTokens.length);
-
-          if (similarity >= threshold) {
-            matches.push({
-              platform,
-              item,
-              similarity
-            });
-          }
-        });
-      });
-
-      return matches.length > 0 ? matches : null;
-    };
-
-    // 处理所有平台数据
-    Object.entries(trendingData).forEach(([sourcePlatform, items]) => {
-      items.forEach(sourceItem => {
-        const title = sourceItem.title;
-        if (!title || processedTitles.has(title)) return;
-
-        const matches = findSimilarTitle(title);
-        if (matches) {
-          // 标记所有匹配的标题为已处理
-          processedTitles.add(title);
-          matches.forEach(m => processedTitles.add(m.item.title || ''));
-
-          // 计算总热度
-          const totalHeat = parseInt(sourceItem.score || '0') +
-            matches.reduce((sum, m) => sum + parseInt(m.item.score || '0'), 0);
-
-          // 收集所有相关平台
-          const platforms = [sourcePlatform, ...matches.map(m => m.platform)];
-
-          // 收集所有匹配项
-          const allMatches = [sourceItem, ...matches.map(m => m.item)];
-
-          trends.push({
-            topic: title,
-            platforms: [...new Set(platforms)], // 去重
-            totalHeat,
-            matches: allMatches
-          });
-        }
-      });
-    });
-
-    // 按照跨平台数量和总热度排序
-    return trends
-      .sort((a, b) => {
-        // 首先按平台数量排序
-        const platformDiff = b.platforms.length - a.platforms.length;
-        // 如果平台数量相同，按热度排序
-        return platformDiff !== 0 ? platformDiff : b.totalHeat - a.totalHeat;
-      })
-      .slice(0, 5); // 只返回前5个
-  }, [trendingData]);
-
-  // 获取活跃平台信息
-  const activePlatformInfo = PLATFORMS.find(p => p.code === activePlatform);
 
   // 主题分析视图 - 热门关键词组件 - 更新为使用API数据
   const renderHotKeywords = () => (
@@ -732,7 +608,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 平台更新频率信息 */}
             <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">平台更新频率</h4>
 
@@ -937,16 +812,6 @@ export default function Home() {
             >
               了解更多
             </Link>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="px-8 py-4 bg-gradient-to-r from-secondary-600 to-secondary-700 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-secondary-500/20 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              设置
-            </button>
           </div>
         </motion.div>
       </section>
@@ -969,13 +834,13 @@ export default function Home() {
           animate="show"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {sortedPlatforms.map((platform, index) => (
+          {displayPlatforms.map((platform, index) => (
             <motion.div key={platform.code} variants={itemVariants}>
               <PlatformCard
                 platform={platform}
                 index={index}
                 trendingItems={trendingData[platform.code] || []}
-                maxItems={settings.newsDisplayCount}
+                maxItems={settings?.newsDisplayCount || 10}
               />
             </motion.div>
           ))}
@@ -1120,42 +985,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* 热点趋势预测 - New Feature Section */}
-      {/* <section className="mb-24">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            热点趋势预测
-            <span className="ml-2 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
-              新功能
-            </span>
-          </h2>
-
-          <div>
-            <a
-              href="#"
-              className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
-            >
-              了解更多
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        {allDataLoaded ? (
-          <TrendPrediction trendingData={trendingData} />
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-12 flex flex-col items-center justify-center border border-gray-100 dark:border-gray-700">
-            <LoadingSpinner size="lg" className="mb-4" />
-            <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">正在准备热点趋势预测</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              我们正在对全网热点数据进行高级分析，请稍候...
-            </p>
-          </div>
-        )}
-      </section> */}
-
       {/* 跨平台热点 */}
       <section className="mb-24">
         <div className="flex items-center justify-between mb-8">
@@ -1207,12 +1036,11 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 设置弹窗 */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        settings={settings}
-        onSettingsChange={saveSettings}
+      {/* 版本更新弹窗 */}
+      <VersionUpdateModal
+        isOpen={showVersionModal}
+        onClose={handleCloseVersionModal}
+        version={currentVersion}
       />
     </>
   );

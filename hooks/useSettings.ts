@@ -8,10 +8,9 @@ const STORAGE_KEY = "hot_news_user_settings";
 
 const DEFAULT_SETTINGS: UserSettings = {
   newsDisplayCount: 10,
-  featuredPlatforms: ['baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github'],
-  platformOrder: ['baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github', '36kr', 'shaoshupai', 'douban', 'hupu', 'tieba', 'juejin', 'v2ex', 'jinritoutiao', 'stackoverflow', 'hackernews'],
+  featuredPlatforms: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba'],
+  platformOrder: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba', 'bilibili', 'douban', 'hupu', 'juejin', 'douyin', 'github', 'v2ex', 'jinritoutiao', 'stackoverflow', 'hackernews', '52pojie', 'tenxunwang'],
   autoRefresh: true,
-  refreshInterval: 30,
   darkMode: false,
 };
 
@@ -29,9 +28,11 @@ export function useSettings() {
         const mergedSettings = {
           ...DEFAULT_SETTINGS,
           ...parsedSettings,
-          // 确保平台列表是最新的
-          platformOrder: parsedSettings.platformOrder || DEFAULT_SETTINGS.platformOrder,
-          featuredPlatforms: parsedSettings.featuredPlatforms || DEFAULT_SETTINGS.featuredPlatforms,
+          // 确保平台列表是最新的，并且featuredPlatforms中的平台都在platformOrder中
+          platformOrder: DEFAULT_SETTINGS.platformOrder,
+          featuredPlatforms: (parsedSettings.featuredPlatforms || []).filter((platform: string) =>
+            DEFAULT_SETTINGS.platformOrder.includes(platform as PlatformType)
+          ),
         };
         setSettings(mergedSettings);
       }
@@ -48,7 +49,7 @@ export function useSettings() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
       setSettings(newSettings);
-      
+
       // 如果深色模式设置发生变化，立即应用
       if (newSettings.darkMode !== settings.darkMode) {
         applyDarkMode(newSettings.darkMode);
@@ -89,7 +90,7 @@ export function useSettings() {
 
   // 获取过滤后的平台列表（按用户设置的顺序和选择）
   const getFeaturedPlatforms = useMemo(() => {
-    return settings.platformOrder.filter(platformCode => 
+    return settings.platformOrder.filter(platformCode =>
       settings.featuredPlatforms.includes(platformCode)
     );
   }, [settings.platformOrder, settings.featuredPlatforms]);
