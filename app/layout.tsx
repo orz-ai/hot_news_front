@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "../components/ClientLayout";
+import GoogleAnalytics from "../components/GoogleAnalytics";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,14 +18,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://hot.orz.ai'),
+  metadataBase: new URL('https://news.orz.ai'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: "热点速览 - 全网热门内容聚合平台",
     description: "汇聚全网热门内容，一站式浏览各大平台热点话题",
-    url: 'https://hot.orz.ai',
+    url: 'https://news.orz.ai',
     siteName: '热点速览',
     locale: 'zh_CN',
     type: 'website',
@@ -55,6 +56,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={inter.className}>
+        <GoogleAnalytics />
         <ClientLayout>
           {children}
         </ClientLayout>
