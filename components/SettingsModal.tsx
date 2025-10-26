@@ -23,7 +23,7 @@ export interface UserSettings {
 const DEFAULT_SETTINGS: UserSettings = {
     newsDisplayCount: 10,
     featuredPlatforms: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba'],
-    platformOrder: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba', 'bilibili', 'douban', 'hupu', 'juejin', 'douyin', 'github', 'v2ex', 'jinritoutiao', 'stackoverflow', 'hackernews', '52pojie', 'tenxunwang'],
+    platformOrder: PLATFORMS.map(platform => platform.code), // 从PLATFORMS配置中获取所有平台
     autoRefresh: true,
     darkMode: false,
 };
@@ -35,7 +35,27 @@ export default function SettingsModal({ isOpen, onClose, settings, onSettingsCha
 
     useEffect(() => {
         if (isOpen) {
-            setLocalSettings(settings);
+            // 同步platformOrder，保持现有顺序，新增平台添加到末尾
+            const currentPlatformCodes = PLATFORMS.map(p => p.code);
+            const existingOrder = settings.platformOrder || [];
+            
+            // 保留现有顺序中仍然存在的平台
+            const validExistingOrder = existingOrder.filter(code => 
+                currentPlatformCodes.includes(code)
+            );
+            
+            // 找出新增的平台
+            const newPlatforms = currentPlatformCodes.filter(code => 
+                !existingOrder.includes(code)
+            );
+            
+            // 合并：现有顺序 + 新增平台
+            const syncedPlatformOrder = [...validExistingOrder, ...newPlatforms];
+            
+            setLocalSettings({
+                ...settings,
+                platformOrder: syncedPlatformOrder
+            });
         }
     }, [settings, isOpen]);
 
@@ -281,7 +301,6 @@ export default function SettingsModal({ isOpen, onClose, settings, onSettingsCha
                                             </div>
                                             <div className="grid grid-cols-3 gap-3">
                                                 {(() => {
-                                                    // 获取所有平台，按照platformOrder的顺序排列
                                                     const selectedPlatforms = localSettings.platformOrder.filter(code =>
                                                         localSettings.featuredPlatforms.includes(code)
                                                     );

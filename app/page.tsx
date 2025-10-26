@@ -17,11 +17,8 @@ import VersionUpdateModal from "../components/VersionUpdateModal";
 import { fetchTrendingData, fetchAnalysisData, fetchPlatformComparisonData, fetchCrossPlatformData, fetchMultiPlatformData } from "../utils/api";
 import { ApiResponse, PlatformType, TrendingItem as TrendingItemType, HotKeyword, TopicDistribution, RelatedTopicGroup, PlatformRanking, TimeDistribution, CommonTopic } from "../types";
 
-const ALL_PLATFORMS: PlatformType[] = [
-  'baidu', 'weibo', 'zhihu', 'bilibili', 'douyin', 'github', '36kr',
-  'shaoshupai', 'douban', 'hupu', 'tieba', 'juejin', 'v2ex',
-  'jinritoutiao', 'stackoverflow', 'hackernews', '52pojie', 'tenxunwang'
-];
+// 从PLATFORMS配置中获取所有平台代码
+const ALL_PLATFORMS: PlatformType[] = PLATFORMS.map(platform => platform.code);
 
 // 动画变体
 const containerVariants = {
@@ -51,7 +48,7 @@ const TOPIC_CATEGORIES = [
 export default function Home() {
   // 使用设置Hook
   const { settings, saveSettings, getFeaturedPlatforms, isLoading: settingsLoading } = useSettings();
-  
+
   // 使用版本更新Hook
   const { showVersionModal, currentVersion, handleCloseVersionModal } = useVersionUpdate();
 
@@ -330,7 +327,6 @@ export default function Home() {
       .sort((a, b) => b.totalScore - a.totalScore);
 
     // 时序趋势分析（基于发布时间）
-    // 注：此处简单模拟，实际应根据真实的发布时间进行分析
     const timeFrames = {
       'morning': { label: '上午', count: 0, percentage: 0 },
       'afternoon': { label: '下午', count: 0, percentage: 0 },
@@ -361,7 +357,7 @@ export default function Home() {
   }, [trendingData]);
 
 
-  // 主题分析视图 - 热门关键词组件 - 更新为使用API数据
+  // 主题分析视图 - 热门关键词组件
   const renderHotKeywords = () => (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
@@ -403,7 +399,7 @@ export default function Home() {
     </div>
   );
 
-  // 主题分析视图 - 主题分布组件 - 更新为使用API数据
+  // 主题分析视图 - 主题分布组件
   const renderTopicDistribution = () => (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
@@ -488,7 +484,7 @@ export default function Home() {
     </div>
   );
 
-  // 平台热度排行组件 - 更新为使用API数据
+  // 平台热度排行组件
   const renderPlatformRankings = () => (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
@@ -565,7 +561,7 @@ export default function Home() {
     </div>
   );
 
-  // 热点时间分布组件 - 更新为使用API数据
+  // 热点时间分布组件
   const renderTimeDistribution = () => (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
@@ -639,7 +635,7 @@ export default function Home() {
     </div>
   );
 
-  // 跨平台热点视图 - 更新为使用API数据
+  // 跨平台热点视图
   const renderCrossPlatformTopics = () => (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden border border-gray-100 dark:border-gray-700">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
@@ -1046,7 +1042,7 @@ export default function Home() {
   );
 }
 
-// 辅助函数: 格式化数字，如果大于1万则显示为x.x万
+// 辅助函数: 格式化数字
 function formatNumber(value: string): string {
   const num = parseInt(value);
   if (isNaN(num)) return value;

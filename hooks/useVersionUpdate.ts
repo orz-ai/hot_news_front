@@ -10,7 +10,7 @@ export function useVersionUpdate() {
 
   useEffect(() => {
     // 获取当前版本号
-    const version = "1.0.2";
+    const version = "1.0.3";
     setCurrentVersion(version);
 
     // 检查是否已经看过这个版本的更新说明

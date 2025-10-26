@@ -3,13 +3,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { UserSettings } from "../components/SettingsModal";
 import { PlatformType } from "../types";
+import { PLATFORMS } from "../constants/platforms";
 
 const STORAGE_KEY = "hot_news_user_settings";
 
 const DEFAULT_SETTINGS: UserSettings = {
   newsDisplayCount: 10,
-  featuredPlatforms: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba'],
-  platformOrder: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba', 'bilibili', 'douban', 'hupu', 'juejin', 'douyin', 'github', 'v2ex', 'jinritoutiao', 'stackoverflow', 'hackernews', '52pojie', 'tenxunwang'],
+  featuredPlatforms: PLATFORMS.slice(0, 6).map(platform => platform.code), // 取前6个作为默认特色平台
+  platformOrder: PLATFORMS.map(platform => platform.code), // 从PLATFORMS配置中获取所有平台
   autoRefresh: true,
   darkMode: false,
 };

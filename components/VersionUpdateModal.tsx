@@ -17,14 +17,14 @@ interface UpdateFeature {
 
 const UPDATE_FEATURES: UpdateFeature[] = [
   {
+    title: "新增财经平台",
+    description: "新增新浪财经、东方财富、雪球、财联社等4个财经资讯平台",
+    type: "new"
+  },
+  {
     title: "平台选择优化",
     description: "修复了平台选择限制问题，现在可以正确选择最多9个平台",
     type: "fix"
-  },
-  {
-    title: "全部取消功能",
-    description: "新增一键取消所有已选平台的便捷按钮",
-    type: "new"
   },
   {
     title: "用户体验提升",
