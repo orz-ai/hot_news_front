@@ -106,7 +106,11 @@ export type PlatformType =
   | 'stackoverflow'
   | 'github'
   | 'hackernews'
-  | 'tenxunwang';
+  | 'tenxunwang'
+  | 'sina_finance'
+  | 'eastmoney'
+  | 'xueqiu'
+  | 'cls';
 
 export interface PlatformInfo {
   code: PlatformType;

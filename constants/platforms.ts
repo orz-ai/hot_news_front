@@ -144,5 +144,37 @@ export const PLATFORMS: PlatformInfo[] = [
     contentType: ['新闻', '社会热点', '娱乐', '科技'],
     updateFrequency: '30分钟',
     color: '#00a4ff'
+  },
+  {
+    code: 'sina_finance',
+    name: '新浪财经',
+    description: '财经新闻、股市资讯',
+    contentType: ['财经新闻', '股市资讯', '投资理财'],
+    updateFrequency: '30分钟',
+    color: '#e60012'
+  },
+  {
+    code: 'eastmoney',
+    name: '东方财富',
+    description: '财经资讯、投资理财',
+    contentType: ['财经资讯', '投资理财', '股票分析'],
+    updateFrequency: '30分钟',
+    color: '#ff6600'
+  },
+  {
+    code: 'xueqiu',
+    name: '雪球',
+    description: '股票投资、财经社区',
+    contentType: ['股票投资', '财经社区', '投资策略'],
+    updateFrequency: '30分钟',
+    color: '#00aa88'
+  },
+  {
+    code: 'cls',
+    name: '财联社',
+    description: '财经快讯、市场动态',
+    contentType: ['财经快讯', '市场动态', '实时资讯'],
+    updateFrequency: '30分钟',
+    color: '#1890ff'
   }
 ];
