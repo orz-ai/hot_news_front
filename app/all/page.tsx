@@ -32,9 +32,9 @@ export default function AllPlatformsPage() {
   const [loading, setLoading] = useState(true);
   const [trendingData, setTrendingData] = useState<Record<PlatformType, TrendingItem[]>>({} as Record<PlatformType, TrendingItem[]>);
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // 点击外部关闭下拉框
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -42,13 +42,13 @@ export default function AllPlatformsPage() {
         setIsDropdownOpen(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
   // 加载所有平台数据
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +56,7 @@ export default function AllPlatformsPage() {
       try {
         // 使用新的API一次性获取所有平台数据
         const response = await fetchAllPlatformsData(currentDate);
-        
+
         if (response.status === '200') {
           setTrendingData(response.data);
         } else {
@@ -68,26 +68,26 @@ export default function AllPlatformsPage() {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [currentDate]);
-  
+
   // Extract all unique categories from platforms
   const allCategories = Array.from(
     new Set(
       PLATFORMS.flatMap(platform => platform.contentType)
     )
   ).sort();
-  
+
   // Filter platforms based on search term and selected category
   const filteredPlatforms = PLATFORMS.filter(platform => {
-    const matchesSearch = platform.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = platform.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          platform.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory ? 
-                           platform.contentType.includes(selectedCategory) : 
+
+    const matchesCategory = selectedCategory ?
+                           platform.contentType.includes(selectedCategory) :
                            true;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -98,7 +98,7 @@ export default function AllPlatformsPage() {
 
         </Link>
       </div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -109,7 +109,7 @@ export default function AllPlatformsPage() {
           我们支持以下 {PLATFORMS.length} 个平台的热点内容获取，每 30 分钟更新一次。
         </p>
       </motion.div>
-      
+
       <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-card overflow-visible border border-gray-100 dark:border-gray-700 mb-12">
         <div className="p-5">
           <div className="flex flex-col md:flex-row gap-4">
@@ -130,7 +130,7 @@ export default function AllPlatformsPage() {
                 />
               </div>
             </div>
-            
+
             {/* 精美下拉框 */}
             <div className="flex-shrink-0 relative min-w-[220px]" ref={dropdownRef}>
               <button
@@ -146,20 +146,20 @@ export default function AllPlatformsPage() {
                   </svg>
                   <span>{selectedCategory || '全部分类'}</span>
                 </div>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className={`h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`} 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              
+
               {/* 下拉框内容 */}
               {isDropdownOpen && (
-                <div 
+                <div
                   className="absolute mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-2 z-50 max-h-[300px] overflow-y-auto"
                   role="listbox"
                 >
@@ -185,7 +185,7 @@ export default function AllPlatformsPage() {
                       <span className={selectedCategory === null ? "" : "ml-6"}>全部分类</span>
                     </div>
                   </button>
-                  
+
                   {allCategories.map(category => (
                     <button
                       key={category}
@@ -215,21 +215,21 @@ export default function AllPlatformsPage() {
               )}
             </div>
           </div>
-          
+
           {/* 激活的筛选条件 */}
           {(searchTerm || selectedCategory) && (
             <div className="mt-4 flex items-center flex-wrap gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400 mr-1">
                 当前筛选:
               </span>
-              
+
               {searchTerm && (
                 <span className="bg-blue-50 dark:bg-blue-900/30 text-primary-600 dark:text-primary-300 text-xs px-3 py-1.5 rounded-full flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   {searchTerm}
-                  <button 
+                  <button
                     className="ml-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                     onClick={() => setSearchTerm("")}
                   >
@@ -239,14 +239,14 @@ export default function AllPlatformsPage() {
                   </button>
                 </span>
               )}
-              
+
               {selectedCategory && (
                 <span className="bg-blue-50 dark:bg-blue-900/30 text-primary-600 dark:text-primary-300 text-xs px-3 py-1.5 rounded-full flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                   {selectedCategory}
-                  <button 
+                  <button
                     className="ml-1.5 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                     onClick={() => setSelectedCategory(null)}
                   >
@@ -256,9 +256,9 @@ export default function AllPlatformsPage() {
                   </button>
                 </span>
               )}
-              
+
               {(searchTerm || selectedCategory) && (
-                <button 
+                <button
                   className="text-primary-600 dark:text-primary-400 text-xs font-medium hover:underline flex items-center"
                   onClick={() => {
                     setSearchTerm("");
@@ -275,7 +275,7 @@ export default function AllPlatformsPage() {
           )}
         </div>
       </div>
-      
+
       {/* 筛选结果数 */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -285,17 +285,17 @@ export default function AllPlatformsPage() {
           {selectedCategory ? `当前分类: ${selectedCategory}` : '全部分类'}
         </div>
       </div>
-      
+
       {/* 加载指示器 */}
       {loading && (
         <div className="flex justify-center items-center py-20">
           <LoadingSpinner size="lg" />
         </div>
       )}
-      
+
       {/* 平台卡片 */}
       {!loading && (
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
@@ -304,9 +304,9 @@ export default function AllPlatformsPage() {
           {filteredPlatforms.length > 0 ? (
             filteredPlatforms.map((platform, index) => (
               <motion.div key={platform.code} variants={itemVariants}>
-                <PlatformCard 
-                  platform={platform} 
-                  index={index} 
+                <PlatformCard
+                  platform={platform}
+                  index={index}
                   trendingItems={trendingData[platform.code] || []}
                 />
               </motion.div>
@@ -337,4 +337,4 @@ export default function AllPlatformsPage() {
       )}
     </>
   );
-} 
+}

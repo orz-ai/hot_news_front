@@ -196,14 +196,6 @@ function HotItem({ item, rank, platformColor = '#3b76ea' }: {
           </div>
           <div className="flex-grow min-w-0">
             <p className="text-sm">暂无内容</p>
-            <div className="mt-1 flex items-center">
-              <span className="text-xs flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {formatTime(item.publish_time)}
-              </span>
-            </div>
           </div>
         </div>
       );
@@ -265,27 +257,6 @@ function HotItem({ item, rank, platformColor = '#3b76ea' }: {
         <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
           {item.title}
         </h4>
-
-        {item.score && (
-          <div className="mt-1 flex items-center">
-            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-              {formatNumber(item.score)}
-            </span>
-          </div>
-        )}
-        {!item.score && item.publish_time && (
-          <div className="mt-1 flex items-center">
-            <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {formatTime(item.publish_time)}
-            </span>
-          </div>
-        )}
       </div>
     </a>
   );

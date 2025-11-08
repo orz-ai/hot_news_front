@@ -16,6 +16,7 @@ import { useVersionUpdate } from "../hooks/useVersionUpdate";
 import VersionUpdateModal from "../components/VersionUpdateModal";
 import { fetchTrendingData, fetchAnalysisData, fetchPlatformComparisonData, fetchCrossPlatformData, fetchMultiPlatformData } from "../utils/api";
 import { ApiResponse, PlatformType, TrendingItem as TrendingItemType, HotKeyword, TopicDistribution, RelatedTopicGroup, PlatformRanking, TimeDistribution, CommonTopic } from "../types";
+import HeroSwiper from "@/components/HeroSwiper";
 
 // 从PLATFORMS配置中获取所有平台代码
 const ALL_PLATFORMS: PlatformType[] = PLATFORMS.map(platform => platform.code);
@@ -772,44 +773,7 @@ export default function Home() {
     <>
       {/* Hero Section */}
       <section className="mb-16 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-4xl mx-auto"
-        >
-          <div className="inline-block mb-6 bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 px-6 py-2 rounded-full">
-            <span className="text-sm font-medium bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-              汇聚17个平台的实时热点内容
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-              全网热点
-            </span>
-            <span className="text-gray-900 dark:text-white"> 一站速览</span>
-          </h1>
-
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-            每30分钟自动更新，让您随时了解全网最新热门话题、事件和趋势。
-          </p>
-
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/all"
-              className="px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-primary-500/20 transform hover:-translate-y-1 transition-all duration-300"
-            >
-              浏览全部平台
-            </Link>
-            <Link
-              href="/about"
-              className="px-8 py-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 font-medium rounded-xl hover:shadow-md transform hover:-translate-y-1 transition-all duration-300"
-            >
-              了解更多
-            </Link>
-          </div>
-        </motion.div>
+        <HeroSwiper></HeroSwiper>
       </section>
 
       {/* Featured Platforms */}
