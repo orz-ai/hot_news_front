@@ -82,11 +82,11 @@ export default function AllPlatformsPage() {
   // Filter platforms based on search term and selected category
   const filteredPlatforms = PLATFORMS.filter(platform => {
     const matchesSearch = platform.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         platform.description.toLowerCase().includes(searchTerm.toLowerCase());
+      platform.description.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory = selectedCategory ?
-                           platform.contentType.includes(selectedCategory) :
-                           true;
+      platform.contentType.includes(selectedCategory) :
+      true;
 
     return matchesSearch && matchesCategory;
   });
@@ -164,11 +164,10 @@ export default function AllPlatformsPage() {
                   role="listbox"
                 >
                   <button
-                    className={`w-full text-left px-4 py-2.5 text-sm ${
-                      selectedCategory === null 
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium' 
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                    }`}
+                    className={`w-full text-left px-4 py-2.5 text-sm ${selectedCategory === null
+                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
                     onClick={() => {
                       setSelectedCategory(null);
                       setIsDropdownOpen(false);
@@ -189,11 +188,10 @@ export default function AllPlatformsPage() {
                   {allCategories.map(category => (
                     <button
                       key={category}
-                      className={`w-full text-left px-4 py-2.5 text-sm ${
-                        selectedCategory === category 
-                          ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium' 
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                      }`}
+                      className={`w-full text-left px-4 py-2.5 text-sm ${selectedCategory === category
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        }`}
                       onClick={() => {
                         setSelectedCategory(category);
                         setIsDropdownOpen(false);

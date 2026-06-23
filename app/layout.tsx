@@ -55,6 +55,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6518594342529378"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={inter.className}>
         <GoogleAnalytics />
         <ClientLayout>
