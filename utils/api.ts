@@ -226,7 +226,7 @@ export async function fetchTrendForecast(timeRange: string = '24h'): Promise<Tre
       date: new Date().toISOString().split('T')[0],
       analysis_type: 'trend_forecast',
       time_range: timeRange,
-      description: '基于当前热点数据和历史趋势，预测未来趋势。',
+      description: '',
       has_enough_data: false,
       trend_evolution: [],
       updated_at: new Date().toISOString().replace('T', ' ').substring(0, 19)

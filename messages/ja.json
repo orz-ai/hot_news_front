@@ -1,0 +1,537 @@
+{
+  "meta": {
+    "title": "ホットニュース速報 - トレンドコンテンツ集約プラットフォーム",
+    "description": "ウェブ全体のトレンド話題を一か所で閲覧。Baidu、Weibo、Zhihu、Bilibili、Douyin、GitHub など複数プラットフォームの人気コンテンツを集約しています。",
+    "keywords": "トレンド,ニュース,集約,Baidu,Weibo,Zhihu,Bilibili,Douyin,GitHub",
+    "author": "ホットニュース速報チーム",
+    "siteName": "ホットニュース速報",
+    "shortDescription": "ウェブ全体のトレンド話題を一か所で閲覧"
+  },
+  "common": {
+    "home": "ホーム",
+    "allPlatforms": "すべてのプラットフォーム",
+    "about": "概要",
+    "settings": "設定",
+    "heat": "人気度 {value}",
+    "viewAll": "すべて表示",
+    "loading": "読み込み中...",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "unknown": "不明",
+    "latest": "最新",
+    "backToTop": "トップに戻る"
+  },
+  "languageSwitcher": {
+    "label": "言語を切り替える"
+  },
+  "header": {
+    "brand": "ホットニュース速報",
+    "tagline": "トレンドコンテンツ集約プラットフォーム",
+    "searchPlaceholder": "トレンドを検索...",
+    "searchPlaceholderMobile": "トレンドコンテンツを検索...",
+    "searchAria": "トレンドコンテンツを検索",
+    "searchResults": "検索結果 ({count})",
+    "noResultsTitle": "\"{query}\" に関連するトレンドが見つかりません",
+    "noResultsDesc": "関連するトレンドコンテンツはまだない可能性があります",
+    "searchErrorTitle": "検索エラー",
+    "searchErrorDesc": "しばらくしてから再試行してください",
+    "openSettings": "設定を開く",
+    "homeAria": "ホットニュース速報 ホーム",
+    "mainNav": "メインナビゲーション",
+    "searchResultsAria": "検索結果一覧"
+  },
+  "footer": {
+    "aria": "フッター",
+    "title": "ホットニュース速報",
+    "description": "主要プラットフォームの人気コンテンツを集約し、重要な話題を一か所で把握できます。30分ごとに更新されます。",
+    "quickLinks": "クイックリンク",
+    "contact": "お問い合わせ",
+    "contactHint": "ご質問やご提案があればお気軽にご連絡ください。",
+    "visitGithub": "GitHubを見る",
+    "sendEmail": "メールを送る",
+    "visitWebsite": "サイトを見る",
+    "website": "サイト",
+    "copyright": "© {year} ホットニュース速報. All rights reserved."
+  },
+  "settings": {
+    "title": "パーソナライズ設定",
+    "subtitle": "トレンド閲覧体験をカスタマイズ",
+    "tabs": {
+      "platforms": "プラットフォーム",
+      "display": "表示",
+      "language": "言語",
+      "advanced": "詳細"
+    },
+    "display": {
+      "count": "各プラットフォームの表示件数",
+      "unit": "件",
+      "hint": "各プラットフォームカードに表示するトレンドニュース件数を設定します",
+      "autoRefresh": "データを自動更新"
+    },
+    "platforms": {
+      "title": "プラットフォームの選択と並び替え",
+      "hint": "クリックで選択（最大9件）、ドラッグで並び替え",
+      "clear": "すべて解除"
+    },
+    "language": {
+      "title": "表示言語",
+      "hint": "言語を変更するとページが自動的に再読み込みされます"
+    },
+    "advanced": {
+      "appearance": "外観",
+      "darkMode": "ダークモード",
+      "data": "データ管理",
+      "reset": "初期設定に戻す",
+      "resetHint": "すべての設定が初期値に戻ります"
+    },
+    "footer": {
+      "hint": "設定はローカルストレージに自動保存されます",
+      "cancel": "キャンセル",
+      "save": "設定を保存"
+    }
+  },
+  "about": {
+    "title": "ホットニュース速報について",
+    "lead": "ホットニュース速報は、主要プラットフォームのトレンド話題やコンテンツをすばやく把握できる集約プラットフォームです。",
+    "missionTitle": "私たちの使命",
+    "mission": "情報過多の時代において、人々は断片化された情報に埋もれがちです。ホットニュース速報は、主要プラットフォームの人気コンテンツを効率よく取得し、時間を節約しながら重要な情報を見逃さないよう支援します。",
+    "platformsTitle": "対応プラットフォーム",
+    "platforms": "現在、ソーシャルメディア、ニュース、技術コミュニティ、動画サイトなど17の主要プラットフォームに対応しています。各プラットフォームの内容は30分ごとに更新されます。",
+    "apiTitle": "API サービス",
+    "api": "開発者が各プラットフォームのトレンドデータを取得できる RESTful API を提供しています。使いやすく、CORS に対応しており、詳細な使い方はホームページをご確認ください。",
+    "privacyTitle": "プライバシーについて",
+    "privacy": "当サイトは個人を特定できる情報を収集しません。より良い体験のため、ダークモードなどのテーマ設定を記憶する Cookie のみ使用します。",
+    "contactTitle": "お問い合わせ",
+    "contact": "ご質問やご提案があれば、以下の方法でお気軽にご連絡ください。",
+    "email": "メール: deepincode@qq.com",
+    "github": "GitHub リポジトリ: ホットニュース速報",
+    "disclaimerTitle": "免責事項",
+    "disclaimer": "ホットニュース速報は第三者プラットフォームのトレンドコンテンツを集約するのみであり、内容の正確性や適法性について責任を負いません。著作権は元の作者またはプラットフォームに帰属します。権利侵害がある場合はご連絡ください。"
+  },
+  "allPlatforms": {
+    "title": "すべてのプラットフォーム",
+    "description": "{count} のプラットフォームに対応し、30分ごとに更新されます。",
+    "searchPlaceholder": "プラットフォーム名または説明を検索...",
+    "allCategories": "すべてのカテゴリ",
+    "currentFilters": "現在のフィルター:",
+    "clearFilters": "すべてのフィルターをクリア",
+    "platformCount": "{count} プラットフォーム",
+    "currentCategory": "現在のカテゴリ: {category}",
+    "emptyTitle": "一致するプラットフォームが見つかりません",
+    "emptyDesc": "別の検索条件を試すか、フィルターを解除してください",
+    "clearAll": "すべてのフィルターをクリア"
+  },
+  "platformPage": {
+    "notFound": "プラットフォームが存在しません",
+    "notFoundDesc": "アクセスしたプラットフォームは存在しないか削除されました",
+    "contentType": "コンテンツタイプ:",
+    "updateFrequency": "更新頻度:",
+    "rankingTitle": "トレンド一覧",
+    "refresh": "更新",
+    "fetchFailed": "データ取得に失敗しました: {message}",
+    "fetchError": "データ取得中にエラーが発生しました。後でもう一度お試しください",
+    "empty": "データがありません。後でもう一度お試しください。"
+  },
+  "platformCard": {
+    "noData": "トレンドデータがありません",
+    "viewAll": "すべて表示",
+    "emptyContent": "コンテンツなし"
+  },
+  "trendingItem": {
+    "heat": "人気度 {value}",
+    "latest": "最新"
+  },
+  "platforms": {
+    "baidu": {
+      "name": "Baidu Hot Search",
+      "shortName": "Baidu",
+      "description": "Trending list from Baidu search"
+    },
+    "shaoshupai": {
+      "name": "Shaoshupai",
+      "shortName": "SSP",
+      "description": "High-quality technology media"
+    },
+    "weibo": {
+      "name": "Weibo Hot Search",
+      "shortName": "Weibo",
+      "description": "Trending list from China's largest social platform"
+    },
+    "zhihu": {
+      "name": "Zhihu Hot List",
+      "shortName": "Zhihu",
+      "description": "Hot list from China's well-known Q&A community"
+    },
+    "36kr": {
+      "name": "36Kr",
+      "shortName": "36Kr",
+      "description": "Startup insights and technology news"
+    },
+    "52pojie": {
+      "name": "52pojie",
+      "shortName": "52PJ",
+      "description": "Software security and developer community"
+    },
+    "bilibili": {
+      "name": "Bilibili",
+      "shortName": "Bili",
+      "description": "China's largest video danmaku platform"
+    },
+    "douban": {
+      "name": "Douban",
+      "shortName": "Douban",
+      "description": "Culture community and lifestyle platform"
+    },
+    "hupu": {
+      "name": "Hupu",
+      "shortName": "Hupu",
+      "description": "Sports community"
+    },
+    "tieba": {
+      "name": "Baidu Tieba",
+      "shortName": "Tieba",
+      "description": "China's largest interest-based community"
+    },
+    "juejin": {
+      "name": "Juejin",
+      "shortName": "Juejin",
+      "description": "Developer technology community"
+    },
+    "douyin": {
+      "name": "Douyin",
+      "shortName": "Douyin",
+      "description": "China's largest short-video platform"
+    },
+    "v2ex": {
+      "name": "V2EX",
+      "shortName": "V2EX",
+      "description": "Community for creative professionals"
+    },
+    "jinritoutiao": {
+      "name": "Jinri Toutiao",
+      "shortName": "Toutiao",
+      "description": "Personalized news recommendation platform"
+    },
+    "stackoverflow": {
+      "name": "Stack Overflow",
+      "shortName": "SO",
+      "description": "World's largest programmer Q&A community"
+    },
+    "github": {
+      "name": "GitHub Trending",
+      "shortName": "GitHub",
+      "description": "World's largest open-source code hosting platform"
+    },
+    "hackernews": {
+      "name": "Hacker News",
+      "shortName": "HN",
+      "description": "Tech startup community"
+    },
+    "tenxunwang": {
+      "name": "Tencent News",
+      "shortName": "Tencent",
+      "description": "Well-known Chinese portal website"
+    },
+    "sina_finance": {
+      "name": "Sina Finance",
+      "shortName": "Sina",
+      "description": "Financial news and stock market insights"
+    },
+    "eastmoney": {
+      "name": "Eastmoney",
+      "shortName": "Eastm",
+      "description": "Financial information and investment services"
+    },
+    "xueqiu": {
+      "name": "Xueqiu",
+      "shortName": "Xueqiu",
+      "description": "Stock investment and finance community"
+    },
+    "cls": {
+      "name": "CLS",
+      "shortName": "CLS",
+      "description": "Financial flash news and market updates"
+    },
+    "categories": {
+      "socialHotspot": "Social热点",
+      "entertainment": "Entertainment",
+      "event": "Events",
+      "technology": "Technology",
+      "digital": "Digital",
+      "lifestyle": "Lifestyle",
+      "socialMediaHotspot": "Social media hotspots",
+      "qa": "Q&A",
+      "deepContent": "In-depth content",
+      "techStartup": "Tech startups",
+      "businessNews": "Business news",
+      "tech": "Tech",
+      "software": "Software",
+      "security": "Security",
+      "video": "Video",
+      "animation": "Animation",
+      "gaming": "Gaming",
+      "life": "Life",
+      "booksMoviesMusic": "Books / Movies / Music",
+      "culture": "Culture",
+      "discussion": "Discussion",
+      "sports": "Sports",
+      "interestCommunity": "Interest community",
+      "topicDiscussion": "Topic discussion",
+      "programming": "Programming",
+      "techArticle": "Tech articles",
+      "shortVideoHotspot": "Short-video hotspots",
+      "creativity": "Creativity",
+      "news": "News",
+      "hotEvent": "Hot events",
+      "programmingQa": "Programming Q&A",
+      "techDiscussion": "Tech discussion",
+      "openSourceProject": "Open-source projects",
+      "programmingLanguage": "Programming languages",
+      "techNews": "Tech news",
+      "startup": "Startups",
+      "financeNews": "Financial news",
+      "stockNews": "Stock news",
+      "investment": "Investment",
+      "financeInfo": "Financial information",
+      "stockAnalysis": "Stock analysis",
+      "stockInvestment": "Stock investment",
+      "financeCommunity": "Finance community",
+      "investmentStrategy": "Investment strategy",
+      "financeFlash": "Financial flash",
+      "marketUpdates": "Market updates",
+      "realTimeInfo": "Real-time information"
+    },
+    "updateFrequencies": {
+      "every30Minutes": "Every 30 minutes"
+    }
+  },
+  "heroSwiper": {
+    "categories": {
+      "technology": "Technology",
+      "entertainment": "Entertainment",
+      "finance": "Finance",
+      "sports": "Sports",
+      "social": "Society",
+      "hotspot": "Hotspot",
+      "knowledge": "Knowledge",
+      "culture": "Culture",
+      "community": "Community",
+      "general": "General"
+    },
+    "excerptSuffix": {
+      "long": "is drawing broad attention and discussion.",
+      "short": "{title} has become a trending topic and sparked widespread discussion."
+    },
+    "fallback": {
+      "one": {
+        "title": "Trending updates are on the way",
+        "platform": "System",
+        "category": "Notice",
+        "excerpt": "We are fetching the latest trending content from major platforms. Please refresh later to see the newest updates."
+      },
+      "two": {
+        "title": "Cross-platform trending roundup",
+        "platform": "Aggregator",
+        "category": "General",
+        "excerpt": "Bringing together trending content from Weibo, Zhihu, Baidu and more to give you a broader view of the web."
+      },
+      "three": {
+        "title": "Real-time trend tracking system",
+        "platform": "Platform",
+        "category": "Technology",
+        "excerpt": "A data-driven trend tracking system that monitors how trending topics evolve across the web in real time."
+      }
+    },
+    "viewDetails": "View details",
+    "share": "Share"
+  },
+  "versionUpdate": {
+    "title": "Version update",
+    "version": "v{version}",
+    "subtitle": "We've brought you new features and experience improvements",
+    "contentTitle": "What's included in this update",
+    "dismiss": "Got it",
+    "featureType": {
+      "new": "New",
+      "fix": "Fix",
+      "improvement": "Improvement"
+    },
+    "features": {
+      "finance": {
+        "title": "New finance platforms",
+        "description": "Added 4 finance information platforms including Sina Finance, Eastmoney, Xueqiu and CLS"
+      },
+      "selection": {
+        "title": "Platform selection improvements",
+        "description": "Fixed the platform selection limit so you can now correctly choose up to 9 platforms"
+      },
+      "experience": {
+        "title": "Better user experience",
+        "description": "Improved interaction and visual feedback in the settings panel"
+      }
+    }
+  },
+  "wordCloud": {
+    "title": "Trending keyword cloud",
+    "toolbarAria": "Word cloud filters and display options",
+    "categoryFilterAria": "Keyword category filters",
+    "all": "All",
+    "wordCountAria": "Displayed keyword count, current: {count}",
+    "showWordCount": "Show {count}",
+    "wordCountOption": "Show {count} keywords",
+    "visualizationAria": "Keyword cloud visualization",
+    "loading": "Loading trending keywords...",
+    "empty": "No keyword data available",
+    "description": "The keyword cloud is extracted from trending content across the web. Size reflects weight and color reflects category.",
+    "srItem": "{text}: heat {value}, category: {category}",
+    "srMore": "and {count} more keywords",
+    "fetchFailed": "Failed to fetch keyword cloud data",
+    "categories": {
+      "tech": "Technology",
+      "entertainment": "Entertainment",
+      "social": "Society",
+      "finance": "Finance",
+      "sports": "Sports",
+      "other": "Other"
+    }
+  },
+  "topicHeat": {
+    "title": "Topic heat distribution",
+    "allPlatforms": "All platforms",
+    "tableHeader": "Keyword / Platform",
+    "empty": "No heat distribution data available",
+    "fetchFailed": "Failed to fetch data",
+    "fetchError": "An error occurred while fetching data",
+    "description": "Values represent each keyword's heat index on different platforms. Click a row to focus on a specific keyword.",
+    "legend": {
+      "noData": "No data",
+      "lowHeat": "Low heat",
+      "mediumHeat": "Medium heat",
+      "highHeat": "High heat"
+    }
+  },
+  "trendVisualization": {
+    "view": {
+      "heatmap": "Topic heatmap",
+      "comparison": "Platform comparison",
+      "timeline": "Timeline"
+    },
+    "selectPlatform": "Select platforms:",
+    "heatmap": {
+      "title": "Topic heat distribution",
+      "showTopicWords": "Show {count} topic words",
+      "topicWordOption": "{count} topic words",
+      "topicWord": "Topic word"
+    },
+    "comparison": {
+      "title": "Platform data comparison",
+      "totalHeat": "Total heat",
+      "avgHeat": "Average heat",
+      "avgTitleLength": "Average title length",
+      "charCount": "{count} chars",
+      "topicDistribution": "Topic distribution"
+    },
+    "timeline": {
+      "title": "24-hour heat distribution"
+    }
+  },
+  "trendPrediction": {
+    "title": "Trend prediction",
+    "beta": "BETA",
+    "description": "Based on current trending data and historical patterns, this predicts which topics may continue to gain momentum over the next {timeFrame}.",
+    "loading": "Loading prediction data...",
+    "confidence": "Confidence {label}",
+    "keywords": "Keywords",
+    "platforms": "Platforms",
+    "noData": "Not enough data for trend prediction",
+    "disclaimer": "Trend prediction is based on current trending data and historical-pattern algorithms and is for reference only. Actual trends may vary due to many factors.",
+    "timeFrame": {
+      "day": "24 hours",
+      "week": "7 days",
+      "month": "30 days"
+    },
+    "confidenceLevels": {
+      "veryHigh": "Very high",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "growthTrend": {
+      "strongUp": "Strong rise",
+      "steadyUp": "Steady rise",
+      "slightUp": "Slight rise",
+      "flat": "Flat",
+      "slightDown": "Slight drop",
+      "strongDown": "Clear drop"
+    }
+  },
+  "home": {
+    "categories": {
+      "tech": "Technology",
+      "entertainment": "Entertainment",
+      "social": "Society",
+      "finance": "Finance",
+      "sports": "Sports"
+    },
+    "timePeriods": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "night": "Late night"
+    },
+    "featuredPlatforms": {
+      "title": "Featured platforms"
+    },
+    "wordCloud": {
+      "title": "Keyword cloud",
+      "generating": "Generating keyword cloud",
+      "generatingDesc": "Fetching data from {count} platforms and building the cloud..."
+    },
+    "analysis": {
+      "title": "Aggregated trend analysis",
+      "loadProgress": "{progress}% loaded",
+      "processing": "Processing trending data across the web",
+      "processingDesc": "Fetching data from {count} platforms and running deeper analysis...",
+      "views": {
+        "topics": "Topic analysis",
+        "platforms": "Platform comparison",
+        "visualization": "Visualizations"
+      },
+      "timeRange": {
+        "day": "Last 24 hours",
+        "week": "This week",
+        "month": "This month"
+      }
+    },
+    "hotKeywords": {
+      "title": "Top keywords across the web",
+      "empty": "No hot keyword data available"
+    },
+    "topicDistribution": {
+      "title": "Hot topic distribution",
+      "empty": "No topic distribution data available",
+      "relatedGroups": "Related topic groups",
+      "coOccurrence": "{count} co-occurrences"
+    },
+    "platformRankings": {
+      "title": "Platform heat ranking",
+      "empty": "No platform ranking data available",
+      "rank": "Rank {rank}"
+    },
+    "timeDistribution": {
+      "title": "Time distribution of trends",
+      "periodDistribution": "When trending posts are published during the day",
+      "updateFrequency": "Platform update frequency"
+    },
+    "crossPlatform": {
+      "sectionTitle": "Cross-platform trends",
+      "cardTitle": "Cross-platform hot events",
+      "hotBadge": "Hot",
+      "empty": "No cross-platform trending data available",
+      "platformCount": "{count} platforms",
+      "similarity": "Similarity {value}%",
+      "loadingTitle": "Analyzing cross-platform trends",
+      "loadingDesc": "We are comparing trend data across multiple platforms. Please wait..."
+    }
+  }
+}

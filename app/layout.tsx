@@ -3,16 +3,18 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "../components/ClientLayout";
 import GoogleAnalytics from "../components/GoogleAnalytics";
+import LocaleProvider from "../components/LocaleProvider";
+import messages from "../messages/zh-CN.json";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "热点速览 - 全网热门内容聚合平台",
-  description: "汇聚全网热门内容，一站式浏览各大平台热点话题。支持百度、微博、知乎、B站、抖音、GitHub等多个平台的热点内容聚合。",
-  keywords: "热点,新闻,聚合,百度热搜,微博热搜,知乎热榜,B站热门,抖音热点,GitHub趋势",
-  authors: [{ name: "热点速览团队" }],
-  creator: "热点速览",
-  publisher: "热点速览",
+  title: messages.meta.title,
+  description: messages.meta.description,
+  keywords: messages.meta.keywords,
+  authors: [{ name: messages.meta.author }],
+  creator: messages.meta.siteName,
+  publisher: messages.meta.siteName,
   formatDetection: {
     email: false,
     address: false,
@@ -23,17 +25,17 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "热点速览 - 全网热门内容聚合平台",
-    description: "汇聚全网热门内容，一站式浏览各大平台热点话题",
+    title: messages.meta.title,
+    description: messages.meta.shortDescription,
     url: 'https://news.orz.ai',
-    siteName: '热点速览',
+    siteName: messages.meta.siteName,
     locale: 'zh_CN',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "热点速览 - 全网热门内容聚合平台",
-    description: "汇聚全网热门内容，一站式浏览各大平台热点话题",
+    title: messages.meta.title,
+    description: messages.meta.shortDescription,
   },
   robots: {
     index: true,
@@ -65,9 +67,11 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <GoogleAnalytics />
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <LocaleProvider>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </LocaleProvider>
       </body>
     </html>
   );

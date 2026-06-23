@@ -1,0 +1,449 @@
+{
+  "meta": {
+    "title": "热点速览 - 全网热门内容聚合平台",
+    "description": "汇聚全网热门内容，一站式浏览各大平台热点话题。支持百度、微博、知乎、B站、抖音、GitHub等多个平台的热点内容聚合。",
+    "keywords": "热点,新闻,聚合,百度热搜,微博热搜,知乎热榜,B站热门,抖音热点,GitHub趋势",
+    "author": "热点速览团队",
+    "siteName": "热点速览",
+    "shortDescription": "汇聚全网热门内容，一站式浏览各大平台热点话题"
+  },
+  "common": {
+    "home": "首页",
+    "allPlatforms": "全部平台",
+    "about": "关于我们",
+    "settings": "设置",
+    "heat": "热度 {value}",
+    "viewAll": "查看全部",
+    "loading": "加载中...",
+    "cancel": "取消",
+    "save": "保存",
+    "unknown": "未知",
+    "latest": "最新",
+    "backToTop": "回到顶部"
+  },
+  "languageSwitcher": {
+    "label": "切换语言"
+  },
+  "header": {
+    "brand": "热点速览",
+    "tagline": "热门内容聚合平台",
+    "searchPlaceholder": "搜索热点...",
+    "searchPlaceholderMobile": "搜索热点内容...",
+    "searchAria": "搜索热点内容",
+    "searchResults": "搜索结果 ({count})",
+    "noResultsTitle": "没有找到与\"{query}\"相关的热点",
+    "noResultsDesc": "可能还没有相关的热点内容",
+    "searchErrorTitle": "搜索出错",
+    "searchErrorDesc": "请稍后再试",
+    "openSettings": "打开设置",
+    "homeAria": "热点速览首页",
+    "mainNav": "主导航",
+    "searchResultsAria": "搜索结果列表"
+  },
+  "footer": {
+    "aria": "页脚",
+    "title": "热点速览",
+    "description": "汇聚各大平台热门内容，让您一站式了解全网热点。每30分钟更新一次，确保信息时效性。",
+    "quickLinks": "快速链接",
+    "contact": "联系我们",
+    "contactHint": "有任何问题或建议？请随时与我们联系。",
+    "visitGithub": "访问我们的GitHub",
+    "sendEmail": "发送邮件给我们",
+    "visitWebsite": "访问我们的网站",
+    "website": "网站",
+    "copyright": "© {year} 热点速览. All rights reserved."
+  },
+  "settings": {
+    "title": "个性化设置",
+    "subtitle": "自定义您的热点浏览体验",
+    "tabs": {
+      "platforms": "平台管理",
+      "display": "显示设置",
+      "language": "语言设置",
+      "advanced": "高级选项"
+    },
+    "display": {
+      "count": "每个平台显示新闻数量",
+      "unit": "条",
+      "hint": "设置每个平台卡片中显示的热点新闻数量",
+      "autoRefresh": "自动刷新数据"
+    },
+    "platforms": {
+      "title": "平台选择与排序",
+      "hint": "点击选择平台（最多9个），拖拽调整显示顺序",
+      "clear": "全部取消"
+    },
+    "language": {
+      "title": "界面语言",
+      "hint": "更改语言后页面将自动刷新"
+    },
+    "advanced": {
+      "appearance": "外观设置",
+      "darkMode": "深色模式",
+      "data": "数据管理",
+      "reset": "恢复默认设置",
+      "resetHint": "这将重置所有设置到默认值"
+    },
+    "footer": {
+      "hint": "设置将自动保存到本地存储",
+      "cancel": "取消",
+      "save": "保存设置"
+    }
+  },
+  "about": {
+    "title": "关于热点速览",
+    "lead": "热点速览是一个汇聚全网热门内容的聚合平台，让用户快速了解各大平台的热点话题和内容。",
+    "missionTitle": "我们的使命",
+    "mission": "在信息爆炸的时代，人们往往被大量碎片化的内容所淹没。我们希望通过热点速览，帮助用户高效地获取各大平台的热门内容，节省时间的同时不错过重要信息。",
+    "platformsTitle": "支持的平台",
+    "platforms": "我们目前支持 17 个主流平台的热点内容获取，包括社交媒体、新闻资讯、技术社区、视频平台等多种类型。每个平台的内容都会每 30 分钟更新一次，确保信息的时效性。",
+    "apiTitle": "API 服务",
+    "api": "我们提供 RESTful API 服务，允许开发者获取各平台的热点数据。API 使用简单，支持跨域请求，详细的使用方法请参考首页的说明。",
+    "privacyTitle": "隐私声明",
+    "privacy": "我们重视用户隐私，不会收集任何个人身份信息。我们仅使用 Cookie 记住用户的主题偏好（如暗色模式）以提供更好的用户体验。",
+    "contactTitle": "联系我们",
+    "contact": "如果您有任何问题或建议，请随时与我们联系。您可以通过以下方式联系我们：",
+    "email": "电子邮件：deepincode@qq.com",
+    "github": "GitHub 仓库：热点速览",
+    "disclaimerTitle": "免责声明",
+    "disclaimer": "热点速览仅提供第三方平台的热点内容聚合，不对内容的准确性、合法性负责。所有内容的版权归原作者或平台所有。若有侵权内容，请联系我们删除。"
+  },
+  "allPlatforms": {
+    "title": "全部平台",
+    "description": "我们支持以下 {count} 个平台的热点内容获取，每 30 分钟更新一次。",
+    "searchPlaceholder": "搜索平台名称或描述...",
+    "allCategories": "全部分类",
+    "currentFilters": "当前筛选:",
+    "clearFilters": "清除全部筛选",
+    "platformCount": "{count} 个平台",
+    "currentCategory": "当前分类: {category}",
+    "emptyTitle": "未找到匹配的平台",
+    "emptyDesc": "请尝试使用其他搜索条件或清除筛选",
+    "clearAll": "清除所有筛选"
+  },
+  "platformPage": {
+    "notFound": "平台不存在",
+    "notFoundDesc": "您访问的平台不存在或已被移除",
+    "contentType": "内容类型:",
+    "updateFrequency": "更新频率:",
+    "rankingTitle": "热榜内容",
+    "refresh": "刷新",
+    "fetchFailed": "获取数据失败: {message}",
+    "fetchError": "获取数据时出错，请稍后再试",
+    "empty": "暂无数据，请稍后再试。"
+  },
+  "platformCard": {
+    "noData": "暂无热点数据",
+    "viewAll": "查看全部",
+    "emptyContent": "暂无内容"
+  },
+  "trendingItem": {
+    "heat": "热度 {value}",
+    "latest": "最新"
+  },
+  "platforms": {
+    "baidu": { "name": "百度热搜", "shortName": "百度", "description": "百度搜索引擎热搜榜单" },
+    "shaoshupai": { "name": "少数派", "shortName": "少数派", "description": "高质量科技媒体" },
+    "weibo": { "name": "微博热搜", "shortName": "微博", "description": "中国最大的社交平台热搜榜" },
+    "zhihu": { "name": "知乎热榜", "shortName": "知乎", "description": "中国知名问答社区热榜" },
+    "36kr": { "name": "36氪", "shortName": "36氪", "description": "创业资讯和科技新闻" },
+    "52pojie": { "name": "吾爱破解", "shortName": "吾爱", "description": "软件安全和开发社区" },
+    "bilibili": { "name": "哔哩哔哩", "shortName": "B站", "description": "中国最大的视频弹幕网站" },
+    "douban": { "name": "豆瓣", "shortName": "豆瓣", "description": "文化社区与生活平台" },
+    "hupu": { "name": "虎扑", "shortName": "虎扑", "description": "体育社区" },
+    "tieba": { "name": "百度贴吧", "shortName": "贴吧", "description": "中国最大的兴趣社区" },
+    "juejin": { "name": "掘金", "shortName": "掘金", "description": "开发者技术社区" },
+    "douyin": { "name": "抖音", "shortName": "抖音", "description": "中国最大的短视频平台" },
+    "v2ex": { "name": "V2EX", "shortName": "V2EX", "description": "创意工作者社区" },
+    "jinritoutiao": { "name": "今日头条", "shortName": "头条", "description": "个性化推荐的资讯平台" },
+    "stackoverflow": { "name": "Stack Overflow", "shortName": "SO", "description": "全球最大的程序员问答社区" },
+    "github": { "name": "GitHub Trending", "shortName": "GitHub", "description": "全球最大的开源代码托管平台" },
+    "hackernews": { "name": "Hacker News", "shortName": "HN", "description": "科技创业社区" },
+    "tenxunwang": { "name": "腾讯网", "shortName": "腾讯", "description": "中国知名门户网站" },
+    "sina_finance": { "name": "新浪财经", "shortName": "新浪", "description": "财经新闻、股市资讯" },
+    "eastmoney": { "name": "东方财富", "shortName": "东财", "description": "财经资讯、投资理财" },
+    "xueqiu": { "name": "雪球", "shortName": "雪球", "description": "股票投资、财经社区" },
+    "cls": { "name": "财联社", "shortName": "财联社", "description": "财经快讯、市场动态" },
+    "categories": {
+      "socialHotspot": "社会热点",
+      "entertainment": "娱乐",
+      "event": "事件",
+      "technology": "科技",
+      "digital": "数码",
+      "lifestyle": "生活方式",
+      "socialMediaHotspot": "社交媒体热点",
+      "qa": "问答",
+      "deepContent": "深度内容",
+      "techStartup": "科技创业",
+      "businessNews": "商业资讯",
+      "tech": "技术",
+      "software": "软件",
+      "security": "安全",
+      "video": "视频",
+      "animation": "动漫",
+      "gaming": "游戏",
+      "life": "生活",
+      "booksMoviesMusic": "书影音",
+      "culture": "文化",
+      "discussion": "讨论",
+      "sports": "体育",
+      "interestCommunity": "兴趣社区",
+      "topicDiscussion": "话题讨论",
+      "programming": "编程",
+      "techArticle": "技术文章",
+      "shortVideoHotspot": "短视频热点",
+      "creativity": "创意",
+      "news": "新闻",
+      "hotEvent": "热点事件",
+      "programmingQa": "编程问答",
+      "techDiscussion": "技术讨论",
+      "openSourceProject": "开源项目",
+      "programmingLanguage": "编程语言",
+      "techNews": "科技新闻",
+      "startup": "创业",
+      "financeNews": "财经新闻",
+      "stockNews": "股市资讯",
+      "investment": "投资理财",
+      "financeInfo": "财经资讯",
+      "stockAnalysis": "股票分析",
+      "stockInvestment": "股票投资",
+      "financeCommunity": "财经社区",
+      "investmentStrategy": "投资策略",
+      "financeFlash": "财经快讯",
+      "marketUpdates": "市场动态",
+      "realTimeInfo": "实时资讯"
+    },
+    "updateFrequencies": {
+      "every30Minutes": "30分钟"
+    }
+  },
+  "heroSwiper": {
+    "categories": {
+      "technology": "科技",
+      "entertainment": "娱乐",
+      "finance": "财经",
+      "sports": "体育",
+      "social": "社会",
+      "hotspot": "热点",
+      "knowledge": "知识",
+      "culture": "文化",
+      "community": "社区",
+      "general": "综合"
+    },
+    "excerptSuffix": {
+      "long": "引发广泛关注和讨论。",
+      "short": "{title}成为当前热门话题，引发广泛关注和讨论。"
+    },
+    "fallback": {
+      "one": {
+        "title": "热点资讯正在更新中",
+        "platform": "系统",
+        "category": "提示",
+        "excerpt": "正在从各大平台获取最新热点资讯，请稍后刷新页面查看最新内容。"
+      },
+      "two": {
+        "title": "多平台热点内容汇总",
+        "platform": "聚合",
+        "category": "综合",
+        "excerpt": "汇聚微博、知乎、百度等多平台热点内容，为您提供全面的资讯视角。"
+      },
+      "three": {
+        "title": "实时热点追踪系统",
+        "platform": "平台",
+        "category": "科技",
+        "excerpt": "基于大数据分析的热点追踪系统，实时监控网络热点趋势变化。"
+      }
+    },
+    "viewDetails": "查看详情",
+    "share": "分享"
+  },
+  "versionUpdate": {
+    "title": "版本更新",
+    "version": "v{version}",
+    "subtitle": "我们为您带来了全新的功能和体验优化",
+    "contentTitle": "本次更新内容",
+    "dismiss": "知道了",
+    "featureType": {
+      "new": "新功能",
+      "fix": "修复",
+      "improvement": "优化"
+    },
+    "features": {
+      "finance": {
+        "title": "新增财经平台",
+        "description": "新增新浪财经、东方财富、雪球、财联社等4个财经资讯平台"
+      },
+      "selection": {
+        "title": "平台选择优化",
+        "description": "修复了平台选择限制问题，现在可以正确选择最多9个平台"
+      },
+      "experience": {
+        "title": "用户体验提升",
+        "description": "优化了设置界面的交互体验和视觉反馈"
+      }
+    }
+  },
+  "wordCloud": {
+    "title": "热门关键词云图",
+    "toolbarAria": "词云过滤和显示选项",
+    "categoryFilterAria": "关键词分类过滤",
+    "all": "全部",
+    "wordCountAria": "显示关键词数量，当前: {count}个",
+    "showWordCount": "显示{count}个",
+    "wordCountOption": "显示{count}个关键词",
+    "visualizationAria": "关键词云可视化",
+    "loading": "加载热门关键词中...",
+    "empty": "暂无可用的关键词数据",
+    "description": "关键词云图基于全网热点内容智能提取，大小反映热度权重，颜色反映主题分类",
+    "srItem": "{text}：热度 {value}，分类：{category}",
+    "srMore": "以及更多{count}个关键词",
+    "fetchFailed": "获取关键词云数据失败",
+    "categories": {
+      "tech": "科技",
+      "entertainment": "娱乐",
+      "social": "社会",
+      "finance": "财经",
+      "sports": "体育",
+      "other": "其他"
+    }
+  },
+  "topicHeat": {
+    "title": "主题热度分布图",
+    "allPlatforms": "全部平台",
+    "tableHeader": "关键词 / 平台",
+    "empty": "暂无热度分布数据",
+    "fetchFailed": "获取数据失败",
+    "fetchError": "获取数据时发生错误",
+    "description": "数值表示关键词在各平台上的热度指数，点击行可选中特定关键词进行对比",
+    "legend": {
+      "noData": "无数据",
+      "lowHeat": "低热度",
+      "mediumHeat": "中热度",
+      "highHeat": "高热度"
+    }
+  },
+  "trendVisualization": {
+    "view": {
+      "heatmap": "主题热度图",
+      "comparison": "平台对比",
+      "timeline": "时间线分析"
+    },
+    "selectPlatform": "选择平台:",
+    "heatmap": {
+      "title": "主题热度分布图",
+      "showTopicWords": "显示{count}个主题词",
+      "topicWordOption": "{count} 个主题词",
+      "topicWord": "主题词"
+    },
+    "comparison": {
+      "title": "平台数据对比",
+      "totalHeat": "热度总量",
+      "avgHeat": "平均热度",
+      "avgTitleLength": "平均标题长度",
+      "charCount": "{count} 字符",
+      "topicDistribution": "主题分布"
+    },
+    "timeline": {
+      "title": "24小时热点分布"
+    }
+  },
+  "trendPrediction": {
+    "title": "趋势预测",
+    "beta": "BETA",
+    "description": "基于当前热点数据和历史趋势，预测未来{timeFrame}内可能持续升温的热门话题。",
+    "loading": "加载预测数据中...",
+    "confidence": "可信度{label}",
+    "keywords": "关键词",
+    "platforms": "出现平台",
+    "noData": "没有足够的数据进行趋势预测",
+    "disclaimer": "趋势预测基于当前热点数据分析和历史趋势算法，仅供参考。实际趋势可能受到多种因素影响而变化。",
+    "timeFrame": {
+      "day": "24小时",
+      "week": "7天",
+      "month": "30天"
+    },
+    "confidenceLevels": {
+      "veryHigh": "很高",
+      "high": "较高",
+      "medium": "中等",
+      "low": "较低"
+    },
+    "growthTrend": {
+      "strongUp": "强劲上升",
+      "steadyUp": "稳步上升",
+      "slightUp": "小幅上升",
+      "flat": "持平",
+      "slightDown": "小幅下降",
+      "strongDown": "明显下降"
+    }
+  },
+  "home": {
+    "categories": {
+      "tech": "科技",
+      "entertainment": "娱乐",
+      "social": "社会",
+      "finance": "财经",
+      "sports": "体育"
+    },
+    "timePeriods": {
+      "morning": "上午",
+      "afternoon": "下午",
+      "evening": "晚上",
+      "night": "凌晨"
+    },
+    "featuredPlatforms": {
+      "title": "精选平台"
+    },
+    "wordCloud": {
+      "title": "关键词云图",
+      "generating": "正在生成关键词云图",
+      "generatingDesc": "正在从{count}个平台获取数据并生成词云..."
+    },
+    "analysis": {
+      "title": "热点聚合分析",
+      "loadProgress": "{progress}% 已加载",
+      "processing": "正在处理全网热点数据",
+      "processingDesc": "正在从{count}个平台获取数据并进行深度分析...",
+      "views": {
+        "topics": "主题分析",
+        "platforms": "平台对比",
+        "visualization": "数据可视化"
+      },
+      "timeRange": {
+        "day": "24小时内",
+        "week": "本周内",
+        "month": "本月内"
+      }
+    },
+    "hotKeywords": {
+      "title": "全网热门关键词",
+      "empty": "暂无热门关键词数据"
+    },
+    "topicDistribution": {
+      "title": "热点主题分布",
+      "empty": "暂无主题分布数据",
+      "relatedGroups": "相关主题词组",
+      "coOccurrence": "{count}次共现"
+    },
+    "platformRankings": {
+      "title": "平台热度排行",
+      "empty": "暂无平台排名数据",
+      "rank": "排名 {rank}"
+    },
+    "timeDistribution": {
+      "title": "热点时间分布",
+      "periodDistribution": "一天内热点发布时段分布",
+      "updateFrequency": "平台更新频率"
+    },
+    "crossPlatform": {
+      "sectionTitle": "跨平台热点",
+      "cardTitle": "跨平台热点事件",
+      "hotBadge": "热门",
+      "empty": "暂无跨平台热点数据",
+      "platformCount": "{count}个平台",
+      "similarity": "相似度 {value}%",
+      "loadingTitle": "正在分析跨平台热点",
+      "loadingDesc": "我们正在对多个平台的热点数据进行交叉分析，请稍候..."
+    }
+  }
+}
