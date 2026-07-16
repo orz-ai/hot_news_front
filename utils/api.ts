@@ -1,12 +1,15 @@
 import axios from 'axios';
 import { ApiResponse, PlatformType, AnalysisResponse, PlatformComparisonResponse, CrossPlatformResponse, DataVisualizationResponse, TrendForecastResponse, TrendingItem } from '../types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://orz.ai/api/v1/dailynews/';
+const RAW_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://orz.ai/api/v1/dailynews/';
+const API_BASE_URL = RAW_BASE_URL.endsWith('/') ? RAW_BASE_URL.slice(0, -1) : RAW_BASE_URL;
+
+const API_V1_ROOT = API_BASE_URL.includes('/dailynews') 
+  ? API_BASE_URL.split('/dailynews')[0] 
+  : API_BASE_URL.split('/api/v1')[0] + '/api/v1';
 
 /**
  * Fetches trending data from a specific platform
- * @param platform - The platform code to fetch data from
- * @returns A promise that resolves to the API response
  */
 export async function fetchTrendingData(platform: PlatformType): Promise<ApiResponse> {
   try {
@@ -25,9 +28,6 @@ export async function fetchTrendingData(platform: PlatformType): Promise<ApiResp
 
 /**
  * Fetches trending data from multiple platforms in a single API call
- * @param platforms - Array of platform codes to fetch data from
- * @param date - Optional date parameter in YYYY-MM-DD format
- * @returns A promise that resolves to an object with platform codes as keys and trending items as values
  */
 export async function fetchMultiPlatformData(
   platforms: PlatformType[], 
@@ -36,41 +36,27 @@ export async function fetchMultiPlatformData(
   try {
     const platformsParam = platforms.join(',');
     const dateParam = date ? `&date=${date}` : '';
-    const url = `${API_BASE_URL}multi?platforms=${platformsParam}${dateParam}`;
+    const url = `${API_BASE_URL}/multi?platforms=${platformsParam}${dateParam}`;
     
     const response = await axios.get(url);
     const responseData = response.data;
     
-    if (responseData.status !== '200') {
+    if (responseData.status !== '200' && responseData.status !== 200) {
       throw new Error(responseData.msg || 'Failed to fetch multi-platform data');
     }
     
-    // Initialize the result with empty data for all requested platforms
     const result: Record<PlatformType, ApiResponse> = platforms.reduce((acc, platform) => {
       acc[platform] = {
-        status: responseData.status,
-        data: [],
+        status: responseData.status.toString(),
+        data: responseData.data[platform] || [],
         msg: responseData.msg
       };
       return acc;
     }, {} as Record<PlatformType, ApiResponse>);
     
-    // For each platform in the data object
-    Object.keys(responseData.data).forEach((platform) => {
-      if (platforms.includes(platform as PlatformType)) {
-        result[platform as PlatformType] = {
-          status: responseData.status,
-          data: responseData.data[platform] || [],
-          msg: responseData.msg
-        };
-      }
-    });
-    
     return result;
   } catch (error) {
     console.error('Error fetching multiple platforms:', error);
-    
-    // Return empty data for each requested platform
     return platforms.reduce((acc, platform) => {
       acc[platform] = {
         status: 'error',
@@ -82,12 +68,6 @@ export async function fetchMultiPlatformData(
   }
 }
 
-/**
- * Fetches trending data from multiple platforms simultaneously
- * @param platforms - Array of platform codes to fetch data from
- * @returns A promise that resolves to an object with platform codes as keys and API responses as values
- * @deprecated Use fetchMultiPlatformData instead for better performance
- */
 export async function fetchMultiplePlatforms(platforms: PlatformType[]): Promise<Record<PlatformType, ApiResponse>> {
   try {
     const requests = platforms.map(platform => fetchTrendingData(platform));
@@ -103,15 +83,10 @@ export async function fetchMultiplePlatforms(platforms: PlatformType[]): Promise
   }
 }
 
-/**
- * Fetches trend analysis data from the server
- * @param analysisType - The type of analysis to fetch (default: 'main')
- * @returns A promise that resolves to the analysis data
- */
+
 export async function fetchAnalysisData(analysisType: string = 'main'): Promise<AnalysisResponse> {
   try {
-    const baseUrl = API_BASE_URL.replace('dailynews', 'analysis/trend');
-    const url = `${baseUrl}?type=${analysisType}`;
+    const url = `${API_V1_ROOT}/analysis/trend?type=${analysisType}`;
     const response = await axios.get<AnalysisResponse>(url);
     return response.data;
   } catch (error) {
@@ -129,14 +104,10 @@ export async function fetchAnalysisData(analysisType: string = 'main'): Promise<
   }
 }
 
-/**
- * Fetches platform comparison data from the server
- * @returns A promise that resolves to the platform comparison data
- */
 export async function fetchPlatformComparisonData(): Promise<PlatformComparisonResponse> {
   try {
-    const baseUrl = API_BASE_URL.replace('dailynews', 'analysis/platform-comparison');
-    const response = await axios.get<PlatformComparisonResponse>(baseUrl);
+    const url = `${API_V1_ROOT}/analysis/platform-comparison`;
+    const response = await axios.get<PlatformComparisonResponse>(url);
     return response.data;
   } catch (error) {
     console.error(`Error fetching platform comparison data:`, error);
@@ -161,14 +132,10 @@ export async function fetchPlatformComparisonData(): Promise<PlatformComparisonR
   }
 }
 
-/**
- * Fetches cross-platform hot topics data from the server
- * @returns A promise that resolves to the cross-platform analysis data
- */
 export async function fetchCrossPlatformData(): Promise<CrossPlatformResponse> {
   try {
-    const baseUrl = API_BASE_URL.replace('dailynews', 'analysis/cross-platform');
-    const response = await axios.get<CrossPlatformResponse>(baseUrl);
+    const url = `${API_V1_ROOT}/analysis/cross-platform`;
+    const response = await axios.get<CrossPlatformResponse>(url);
     return response.data;
   } catch (error) {
     console.error(`Error fetching cross-platform data:`, error);
@@ -183,14 +150,10 @@ export async function fetchCrossPlatformData(): Promise<CrossPlatformResponse> {
   }
 }
 
-/**
- * Fetches data visualization information for topic heat distribution
- * @returns A promise that resolves to the data visualization response
- */
 export async function fetchDataVisualization(): Promise<DataVisualizationResponse> {
   try {
-    const baseUrl = API_BASE_URL.replace('dailynews', 'analysis/data-visualization');
-    const response = await axios.get<DataVisualizationResponse>(baseUrl);
+    const url = `${API_V1_ROOT}/analysis/data-visualization`;
+    const response = await axios.get<DataVisualizationResponse>(url);
     return response.data;
   } catch (error) {
     console.error(`Error fetching data visualization:`, error);
@@ -209,14 +172,9 @@ export async function fetchDataVisualization(): Promise<DataVisualizationRespons
   }
 }
 
-/**
- * Fetch trend forecast data
- * @param timeRange - The time range for the forecast (24h, week, month)
- */
 export async function fetchTrendForecast(timeRange: string = '24h'): Promise<TrendForecastResponse> {
   try {
-    const baseUrl = API_BASE_URL.replace('dailynews', 'analysis/trend-forecast');
-    const url = `${baseUrl}?time_range=${timeRange}`;
+    const url = `${API_V1_ROOT}/analysis/trend-forecast?time_range=${timeRange}`;
     const response = await axios.get<TrendForecastResponse>(url);
     return response.data;
   } catch (error) {
@@ -234,11 +192,6 @@ export async function fetchTrendForecast(timeRange: string = '24h'): Promise<Tre
   }
 }
 
-/**
- * Search for trending items across platforms
- * @param keyword - The search keyword
- * @returns A promise that resolves to the search results
- */
 export interface SearchResponse {
   status: string;
   data: Array<{
@@ -257,8 +210,7 @@ export interface SearchResponse {
 
 export async function searchTrendingItems(keyword: string): Promise<SearchResponse> {
   try {
-    const baseUrl = API_BASE_URL.replace('dailynews/', 'dailynews/search');
-    const url = `${baseUrl}?keyword=${encodeURIComponent(keyword)}`;
+    const url = `${API_BASE_URL}/search?keyword=${encodeURIComponent(keyword)}`;
     const response = await axios.get<SearchResponse>(url);
     return response.data;
   } catch (error) {
@@ -273,11 +225,6 @@ export async function searchTrendingItems(keyword: string): Promise<SearchRespon
   }
 }
 
-/**
- * Fetches data for all platforms at once
- * @param date - Optional date parameter in YYYY-MM-DD format
- * @returns A promise that resolves to an object with platform codes as keys and trending items arrays as values
- */
 export interface AllPlatformsResponse {
   status: string;
   data: Record<PlatformType, TrendingItem[]>;
@@ -287,7 +234,7 @@ export interface AllPlatformsResponse {
 export async function fetchAllPlatformsData(date?: string): Promise<AllPlatformsResponse> {
   try {
     const dateParam = date ? `?date=${date}` : '';
-    const url = `${API_BASE_URL}all${dateParam}`;
+    const url = `${API_BASE_URL}/all${dateParam}`;
     const response = await axios.get<AllPlatformsResponse>(url);
     return response.data;
   } catch (error) {
@@ -300,9 +247,6 @@ export async function fetchAllPlatformsData(date?: string): Promise<AllPlatforms
   }
 }
 
-/**
- * Keyword cloud response interface
- */
 export interface KeywordCloudResponse {
   status: string;
   date: string;
@@ -312,24 +256,11 @@ export interface KeywordCloudResponse {
       text: string;
       weight: number;
     }>;
-    [category: string]: Array<{
-      text: string;
-      weight: number;
-    }>;
+    [category: string]: any;
   };
   msg?: string;
 }
 
-/**
- * Fetches keyword cloud data for visualization
- * @param options - Options for fetching keyword cloud data
- * @param options.category - Optional category to filter keywords
- * @param options.date - Optional date in YYYY-MM-DD format
- * @param options.refresh - Whether to refresh the cache
- * @param options.platforms - Optional comma-separated list of platforms
- * @param options.keyword_count - Number of keywords to return (default: 200)
- * @returns A promise that resolves to the keyword cloud data
- */
 export async function fetchKeywordCloud(options: {
   category?: string;
   date?: string;
@@ -339,8 +270,6 @@ export async function fetchKeywordCloud(options: {
 } = {}): Promise<KeywordCloudResponse> {
   try {
     const { category, date, refresh, platforms, keyword_count } = options;
-    
-    // Build query parameters
     const params = new URLSearchParams();
     if (category) params.append('category', category);
     if (date) params.append('date', date);
@@ -349,7 +278,7 @@ export async function fetchKeywordCloud(options: {
     if (keyword_count) params.append('keyword_count', keyword_count.toString());
     
     const queryString = params.toString();
-    const url = `${API_BASE_URL.replace('dailynews', 'analysis/keyword-cloud')}${queryString ? `?${queryString}` : ''}`;
+    const url = `${API_V1_ROOT}/analysis/keyword-cloud${queryString ? `?${queryString}` : ''}`;
     
     const response = await axios.get<KeywordCloudResponse>(url);
     return response.data;
@@ -359,10 +288,8 @@ export async function fetchKeywordCloud(options: {
       status: 'error',
       date: new Date().toISOString().slice(0, 10),
       analysis_type: 'keyword_cloud',
-      keyword_clouds: {
-        all: []
-      },
+      keyword_clouds: { all: [] },
       msg: error instanceof Error ? error.message : 'An unknown error occurred'
     };
   }
-} 
+}
