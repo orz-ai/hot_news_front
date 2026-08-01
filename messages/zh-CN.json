@@ -66,7 +66,8 @@
       "count": "每个平台显示新闻数量",
       "unit": "条",
       "hint": "设置每个平台卡片中显示的热点新闻数量",
-      "autoRefresh": "自动刷新数据"
+      "autoRefresh": "自动刷新数据",
+      "showHotSummary": "显示今日热门总结"
     },
     "platforms": {
       "title": "平台选择与排序",
@@ -393,6 +394,34 @@
     },
     "featuredPlatforms": {
       "title": "精选平台"
+    },
+    "hotSummary": {
+      "badge": "AI 热门总结",
+      "title": "今日热门总结",
+      "subtitle": "快速浏览今天最值得关注的热点脉络、核心话题与后续观察点。",
+      "loadingTitle": "正在生成热门总结",
+      "loadingDesc": "我们正在汇总全网热点并生成今日摘要，请稍候...",
+      "errorTitle": "热门总结加载失败",
+      "errorDesc": "暂时无法获取今日热门总结，请稍后重试。",
+      "retry": "重试",
+      "empty": "暂无热门总结内容",
+      "expand": "展开全文",
+      "collapse": "收起",
+      "refresh": "刷新总结",
+      "notAvailable": "暂无",
+      "noPrevious": "暂无上一版",
+      "meta": {
+        "date": "日期 {value}",
+        "newsCount": "{value} 条热点",
+        "platformCount": "{value} 个平台",
+        "model": "模型 {value}"
+      },
+      "cards": {
+        "generatedAt": "生成时间",
+        "platforms": "覆盖平台",
+        "previousVersion": "上一版日期",
+        "promptVersion": "摘要版本"
+      }
     },
     "wordCloud": {
       "title": "关键词云图",

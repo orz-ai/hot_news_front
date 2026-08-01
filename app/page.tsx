@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { PLATFORMS } from "../constants/platforms";
 import PlatformCard from "../components/PlatformCard";
 import LoadingSpinner from "../components/LoadingSpinner";
+import HotSummary from "../components/HotSummary";
 import WordCloudVisualization from "../components/WordCloudVisualization";
 import TopicHeatVisualization from "../components/TopicHeatVisualization";
 import TrendVisualization from "../components/TrendVisualization";
@@ -655,6 +656,8 @@ export default function Home() {
       <section className="mb-16 py-8">
         <HeroSwiper />
       </section>
+
+      {settings.showHotSummary && <HotSummary />}
 
       <section className="mb-24">
         <div className="flex items-center justify-between mb-8">

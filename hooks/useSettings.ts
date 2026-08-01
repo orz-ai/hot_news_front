@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   featuredPlatforms: PLATFORMS.slice(0, 6).map(platform => platform.code), // 取前6个作为默认特色平台
   platformOrder: PLATFORMS.map(platform => platform.code), // 从PLATFORMS配置中获取所有平台
   autoRefresh: true,
+  showHotSummary: true,
   darkMode: false,
 };
 

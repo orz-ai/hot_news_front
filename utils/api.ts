@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { ApiResponse, PlatformType, AnalysisResponse, PlatformComparisonResponse, CrossPlatformResponse, DataVisualizationResponse, TrendForecastResponse, TrendingItem } from '../types';
+import { ApiResponse, PlatformType, AnalysisResponse, PlatformComparisonResponse, CrossPlatformResponse, DataVisualizationResponse, TrendForecastResponse, TrendingItem, HotSummaryResponse } from '../types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://orz.ai/api/v1/dailynews/';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://news.orz.ai/api/v1/dailynews/';
 
 /**
  * Fetches trending data from a specific platform
@@ -30,21 +30,21 @@ export async function fetchTrendingData(platform: PlatformType): Promise<ApiResp
  * @returns A promise that resolves to an object with platform codes as keys and trending items as values
  */
 export async function fetchMultiPlatformData(
-  platforms: PlatformType[], 
+  platforms: PlatformType[],
   date?: string
 ): Promise<Record<PlatformType, ApiResponse>> {
   try {
     const platformsParam = platforms.join(',');
     const dateParam = date ? `&date=${date}` : '';
     const url = `${API_BASE_URL}multi?platforms=${platformsParam}${dateParam}`;
-    
+
     const response = await axios.get(url);
     const responseData = response.data;
-    
+
     if (responseData.status !== '200') {
       throw new Error(responseData.msg || 'Failed to fetch multi-platform data');
     }
-    
+
     // Initialize the result with empty data for all requested platforms
     const result: Record<PlatformType, ApiResponse> = platforms.reduce((acc, platform) => {
       acc[platform] = {
@@ -54,7 +54,7 @@ export async function fetchMultiPlatformData(
       };
       return acc;
     }, {} as Record<PlatformType, ApiResponse>);
-    
+
     // For each platform in the data object
     Object.keys(responseData.data).forEach((platform) => {
       if (platforms.includes(platform as PlatformType)) {
@@ -65,11 +65,11 @@ export async function fetchMultiPlatformData(
         };
       }
     });
-    
+
     return result;
   } catch (error) {
     console.error('Error fetching multiple platforms:', error);
-    
+
     // Return empty data for each requested platform
     return platforms.reduce((acc, platform) => {
       acc[platform] = {
@@ -92,7 +92,7 @@ export async function fetchMultiplePlatforms(platforms: PlatformType[]): Promise
   try {
     const requests = platforms.map(platform => fetchTrendingData(platform));
     const responses = await Promise.all(requests);
-    
+
     return platforms.reduce((acc, platform, index) => {
       acc[platform] = responses[index];
       return acc;
@@ -339,7 +339,7 @@ export async function fetchKeywordCloud(options: {
 } = {}): Promise<KeywordCloudResponse> {
   try {
     const { category, date, refresh, platforms, keyword_count } = options;
-    
+
     // Build query parameters
     const params = new URLSearchParams();
     if (category) params.append('category', category);
@@ -347,10 +347,10 @@ export async function fetchKeywordCloud(options: {
     if (refresh) params.append('refresh', 'true');
     if (platforms) params.append('platforms', platforms);
     if (keyword_count) params.append('keyword_count', keyword_count.toString());
-    
+
     const queryString = params.toString();
     const url = `${API_BASE_URL.replace('dailynews', 'analysis/keyword-cloud')}${queryString ? `?${queryString}` : ''}`;
-    
+
     const response = await axios.get<KeywordCloudResponse>(url);
     return response.data;
   } catch (error) {
@@ -365,4 +365,26 @@ export async function fetchKeywordCloud(options: {
       msg: error instanceof Error ? error.message : 'An unknown error occurred'
     };
   }
-} 
+}
+
+export async function fetchHotSummary(): Promise<HotSummaryResponse> {
+  try {
+    const baseUrl = API_BASE_URL.replace('dailynews', 'llm/hot-summary');
+    const response = await axios.get<HotSummaryResponse>(baseUrl);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching hot summary:', error);
+    return {
+      status: 'error',
+      date: new Date().toISOString().slice(0, 10),
+      summary: '',
+      previous_summary_date: null,
+      news_count: 0,
+      platforms: [],
+      model: '',
+      generated_at: '',
+      prompt_version: '',
+      message: error instanceof Error ? error.message : 'An unknown error occurred'
+    };
+  }
+}

@@ -66,7 +66,8 @@
       "count": "플랫폼별 뉴스 표시 개수",
       "unit": "개",
       "hint": "각 플랫폼 카드에 표시할 트렌드 뉴스 수를 설정합니다",
-      "autoRefresh": "데이터 자동 새로고침"
+      "autoRefresh": "데이터 자동 새로고침",
+      "showHotSummary": "Show today's hot summary"
     },
     "platforms": {
       "title": "플랫폼 선택 및 정렬",
@@ -532,6 +533,35 @@
       "similarity": "Similarity {value}%",
       "loadingTitle": "Analyzing cross-platform trends",
       "loadingDesc": "We are comparing trend data across multiple platforms. Please wait..."
+    },
+    "hotSummary": {
+      "badge": "AI hot summary",
+      "title": "Today's hot summary",
+      "subtitle": "Get a quick read on today's most important topics, key storylines, and what to watch next.",
+      "loadingTitle": "Generating hot summary",
+      "loadingDesc": "We are aggregating trending topics across the web and preparing today's digest. Please wait...",
+      "errorTitle": "Failed to load hot summary",
+      "errorDesc": "Today's hot summary is temporarily unavailable. Please try again later.",
+      "retry": "Retry",
+      "empty": "No hot summary is available yet",
+      "expand": "Expand full summary",
+      "collapse": "Collapse",
+      "refresh": "Refresh summary",
+      "notAvailable": "N/A",
+      "noPrevious": "No previous version",
+      "meta": {
+        "date": "Date {value}",
+        "newsCount": "{value} hot items",
+        "platformCount": "{value} platforms",
+        "model": "Model {value}"
+      },
+      "cards": {
+        "generatedAt": "Generated at",
+        "platforms": "Covered platforms",
+        "previousVersion": "Previous version date",
+        "provider": "Provider",
+        "promptVersion": "Summary version"
+      }
     }
   }
 }

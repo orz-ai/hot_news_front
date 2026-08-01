@@ -66,7 +66,8 @@
       "count": "News items per platform",
       "unit": "items",
       "hint": "Set how many trending news items each platform card shows",
-      "autoRefresh": "Auto refresh data"
+      "autoRefresh": "Auto refresh data",
+      "showHotSummary": "Show today's hot summary"
     },
     "platforms": {
       "title": "Platform selection and order",
@@ -393,6 +394,34 @@
     },
     "featuredPlatforms": {
       "title": "Featured platforms"
+    },
+    "hotSummary": {
+      "badge": "AI hot summary",
+      "title": "Today's hot summary",
+      "subtitle": "Get a quick read on today's most important topics, key storylines, and what to watch next.",
+      "loadingTitle": "Generating hot summary",
+      "loadingDesc": "We are aggregating trending topics across the web and preparing today's digest. Please wait...",
+      "errorTitle": "Failed to load hot summary",
+      "errorDesc": "Today's hot summary is temporarily unavailable. Please try again later.",
+      "retry": "Retry",
+      "empty": "No hot summary is available yet",
+      "expand": "Expand full summary",
+      "collapse": "Collapse",
+      "refresh": "Refresh summary",
+      "notAvailable": "N/A",
+      "noPrevious": "No previous version",
+      "meta": {
+        "date": "Date {value}",
+        "newsCount": "{value} hot items",
+        "platformCount": "{value} platforms",
+        "model": "Model {value}"
+      },
+      "cards": {
+        "generatedAt": "Generated at",
+        "platforms": "Covered platforms",
+        "previousVersion": "Previous version date",
+        "promptVersion": "Summary version"
+      }
     },
     "wordCloud": {
       "title": "Keyword cloud",

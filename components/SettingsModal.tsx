@@ -20,6 +20,7 @@ export interface UserSettings {
     featuredPlatforms: PlatformType[];
     platformOrder: PlatformType[];
     autoRefresh: boolean;
+    showHotSummary: boolean;
     darkMode: boolean;
 }
 
@@ -28,6 +29,7 @@ const DEFAULT_SETTINGS: UserSettings = {
     featuredPlatforms: ['baidu', 'shaoshupai', 'weibo', 'zhihu', '36kr', 'tieba'],
     platformOrder: PLATFORMS.map(platform => platform.code),
     autoRefresh: true,
+    showHotSummary: true,
     darkMode: false,
 };
 
@@ -197,6 +199,16 @@ export default function SettingsModal({ isOpen, onClose, settings, onSettingsCha
                                                 className="w-4 h-4"
                                             />
                                             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('display.autoRefresh')}</span>
+                                        </label>
+
+                                        <label className="flex items-center gap-3 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={localSettings.showHotSummary}
+                                                onChange={(e) => setLocalSettings({ ...localSettings, showHotSummary: e.target.checked })}
+                                                className="w-4 h-4"
+                                            />
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('display.showHotSummary')}</span>
                                         </label>
                                     </div>
                                 )}

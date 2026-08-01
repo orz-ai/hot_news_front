@@ -8,7 +8,7 @@ Live Demo: [Hot News](https://news.orz.ai/)
 
 Hot News is a modern trending content aggregation platform built with Next.js, TypeScript, Tailwind CSS, and Framer Motion. It aggregates popular content from 17 mainstream platforms, including social media, news, tech communities, video platforms, and more, allowing users to quickly stay updated with trending topics across the web.
 
-![Hot News](https://orz.ai/wp-content/uploads/2025/09/1759164896-Snipaste_2025-09-30_00-54-07.png)
+![Hot News](https://news.orz.ai/wp-content/uploads/2025/09/1759164896-Snipaste_2025-09-30_00-54-07.png)
 
 ## Key Features
 
@@ -80,16 +80,16 @@ yarn dev
 
 The project uses the following environment variables:
 
-| Variable Name            | Description          | Default Value                    |
-| ------------------------ | -------------------- | -------------------------------- |
-| NEXT_PUBLIC_API_BASE_URL | API service base URL | https://orz.ai/api/v1/dailynews/ |
+| Variable Name            | Description          | Default Value                         |
+| ------------------------ | -------------------- |---------------------------------------|
+| NEXT_PUBLIC_API_BASE_URL | API service base URL | https://news.orz.ai/api/v1/dailynews/ |
 
 ## API Usage
 
 Hot News also provides API services that allow developers to fetch trending data from various platforms.
 
 ```shell
-GET https://orz.ai/api/v1/dailynews/?platform=baidu
+GET https://news.orz.ai/api/v1/dailynews/?platform=baidu
 ```
 
 For detailed API documentation, please refer to [here](#).

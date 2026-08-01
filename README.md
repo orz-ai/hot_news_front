@@ -79,16 +79,16 @@ yarn dev
 
 项目使用以下环境变量：
 
-| 变量名                   | 描述               | 默认值                           |
-| ------------------------ | ------------------ | -------------------------------- |
-| NEXT_PUBLIC_API_BASE_URL | API 服务的基础 URL | https://orz.ai/api/v1/dailynews/ |
+| 变量名                   | 描述               | 默认值                                   |
+| ------------------------ | ------------------ |---------------------------------------|
+| NEXT_PUBLIC_API_BASE_URL | API 服务的基础 URL | https://news.orz.ai/api/v1/dailynews/ |
 
 ## API 使用
 
 热点速览还提供了 API 服务，允许开发者获取各平台的热点数据。
 
 ```shell
-GET https://orz.ai/api/v1/dailynews/?platform=baidu
+GET https://news.orz.ai/api/v1/dailynews/?platform=baidu
 ```
 
 详细的 API 文档请参考[此处](#)。

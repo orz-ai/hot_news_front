@@ -198,4 +198,21 @@ export interface TrendForecastResponse {
   trend_evolution: TrendEvolutionItem[];
   updated_at: string;
   msg?: string;
-} 
+}
+
+export interface HotSummaryResponse {
+  status: string;
+  message?: string;
+  date: string;
+  summary: string;
+  previous_summary_date: string | null;
+  news_count: number;
+  platforms: string[];
+  model: string;
+  generated_at: string;
+  prompt_version: string;
+  metadata?: {
+    provider?: string;
+    news_limit?: number;
+  };
+}
