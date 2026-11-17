@@ -8,8 +8,8 @@ export default function ApiIntro() {
         <h1 className="mt-4 text-3xl font-bold text-gray-900 dark:text-white md:text-5xl">热点速览开放 API</h1>
         <p className="mt-5 max-w-3xl text-base leading-8 text-gray-600 dark:text-gray-300 md:text-lg">所有接口均可直接调用，返回 JSON，并已开放跨域访问。修改参数后可在线发送请求，也可以复制 URL 或 cURL 命令集成到你的项目。</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <a href={`${PUBLIC_API_ORIGIN}/docs`} target="_blank" rel="noreferrer" className="rounded-xl bg-primary-600 px-5 py-3 text-sm font-medium text-white hover:bg-primary-700">Swagger 文档</a>
-          <a href={`${PUBLIC_API_ORIGIN}/openapi.json`} target="_blank" rel="noreferrer" className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-medium text-gray-700 hover:border-primary-300 hover:text-primary-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">OpenAPI JSON</a>
+          <a href={`${PUBLIC_API_ORIGIN}/api/v1/docs`} target="_blank" rel="noreferrer" className="rounded-xl bg-primary-600 px-5 py-3 text-sm font-medium text-white hover:bg-primary-700">Swagger 文档</a>
+          <a href={`${PUBLIC_API_ORIGIN}/api/v1/openapi.json`} target="_blank" rel="noreferrer" className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-medium text-gray-700 hover:border-primary-300 hover:text-primary-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">OpenAPI JSON</a>
         </div>
       </section>
 
