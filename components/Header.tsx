@@ -118,6 +118,7 @@ export default function Header({ onSettingsClick }: HeaderProps) {
   const navItems = [
     { href: '/', label: common('home') },
     { href: '/all', label: common('allPlatforms') },
+    { href: '/api-docs', label: common('apiDocs') },
     { href: '/about', label: common('about') }
   ];
 
@@ -271,7 +272,7 @@ export default function Header({ onSettingsClick }: HeaderProps) {
             />
           </div>
 
-          <div className="mt-2 grid grid-cols-4 gap-1">
+          <div className="mt-2 grid grid-cols-5 gap-1">
             {navItems.map((item) => {
               const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
               return (

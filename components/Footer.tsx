@@ -33,6 +33,11 @@ export default function Footer() {
                   {common('about')}
                 </Link>
               </li>
+              <li>
+                <Link href="/api-docs" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 text-sm transition-colors">
+                  {common('apiDocs')}
+                </Link>
+              </li>
             </ul>
           </div>
 

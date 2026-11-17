@@ -98,12 +98,16 @@ function parseSummary(summary: string): ParsedBlock[] {
   return blocks;
 }
 
-export default function HotSummary() {
+interface HotSummaryProps {
+  initialData?: HotSummaryResponse | null;
+}
+
+export default function HotSummary({ initialData = null }: HotSummaryProps) {
   const t = useTranslations('home.hotSummary');
   const locale = useLocale();
   const { getPlatformInfoByCode } = usePlatformI18n();
-  const [data, setData] = useState<HotSummaryResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<HotSummaryResponse | null>(initialData);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [hasError, setHasError] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -123,8 +127,9 @@ export default function HotSummary() {
   }, []);
 
   useEffect(() => {
+    if (initialData) return;
     loadSummary();
-  }, [loadSummary]);
+  }, [initialData, loadSummary]);
 
   const parsedBlocks = useMemo(() => parseSummary(data?.summary || ''), [data?.summary]);
   const platformNames = useMemo(() => {

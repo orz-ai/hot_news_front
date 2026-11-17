@@ -10,6 +10,7 @@
   "common": {
     "home": "홈",
     "allPlatforms": "전체 플랫폼",
+    "apiDocs": "오픈 API",
     "about": "소개",
     "settings": "설정",
     "heat": "인기도 {value}",

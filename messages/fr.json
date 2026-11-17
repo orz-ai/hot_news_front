@@ -10,6 +10,7 @@
   "common": {
     "home": "Accueil",
     "allPlatforms": "Toutes les plateformes",
+    "apiDocs": "API ouverte",
     "about": "À propos",
     "settings": "Paramètres",
     "heat": "Popularité {value}",

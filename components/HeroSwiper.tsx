@@ -76,16 +76,15 @@ export default function HeroSwiper() {
     [t]
   );
 
-  const generateExcerpt = (item: TrendingItem) => {
+  const generateExcerpt = (item: TrendingItem, platformName: string) => {
     if (item.desc && item.desc.trim()) {
       return item.desc.length > 100 ? `${item.desc.substring(0, 100)}...` : item.desc;
     }
 
-    const title = item.title;
-    if (title.length > 50) {
-      return `${title.substring(0, 50)}...${t('excerptSuffix.long')}`;
-    }
-    return t('excerptSuffix.short', { title });
+    const time = item.publish_time || item.pubDate;
+    return time
+      ? `来源：${platformName} · 更新时间：${time}`
+      : `来源：${platformName}，点击查看原始内容。`;
   };
 
   const determineTrend = (score: number): 'up' | 'down' | 'stable' => {
@@ -153,7 +152,7 @@ export default function HeroSwiper() {
                 platform: getPlatformShortName(platform as PlatformType),
                 categoryId,
                 categoryLabel: categoryLabels[categoryId],
-                excerpt: generateExcerpt(item),
+                excerpt: generateExcerpt(item, getPlatformShortName(platform as PlatformType)),
                 link: item.url || '#',
                 hotScore: Math.round(Math.min(score, 99.9) * 10) / 10,
                 trendingTrend: determineTrend(score),

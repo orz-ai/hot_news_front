@@ -9,7 +9,10 @@ import messages from "../messages/zh-CN.json";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: messages.meta.title,
+  title: {
+    default: "热点速览 Orz News｜全网热点趋势聚合平台",
+    template: "%s｜热点速览 Orz News",
+  },
   description: messages.meta.description,
   keywords: messages.meta.keywords,
   authors: [{ name: messages.meta.author }],
@@ -21,14 +24,11 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL('https://news.orz.ai'),
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: messages.meta.title,
     description: messages.meta.shortDescription,
     url: 'https://news.orz.ai',
-    siteName: messages.meta.siteName,
+    siteName: "热点速览 Orz News",
     locale: 'zh_CN',
     type: 'website',
   },
@@ -58,6 +58,39 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://news.orz.ai/#website",
+                  name: "热点速览",
+                  alternateName: ["Orz News", "news.orz.ai"],
+                  url: "https://news.orz.ai/",
+                  inLanguage: "zh-CN",
+                  publisher: { "@id": "https://news.orz.ai/#organization" },
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://news.orz.ai/#organization",
+                  name: "热点速览 Orz News",
+                  url: "https://news.orz.ai/",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://news.orz.ai/android-chrome-512x512.png",
+                  },
+                  sameAs: [
+                    "https://github.com/orz-ai/hot_news",
+                    "https://github.com/orz-ai/hot_news_front",
+                  ],
+                },
+              ],
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
           async

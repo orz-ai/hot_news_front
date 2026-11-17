@@ -10,6 +10,7 @@
   "common": {
     "home": "Home",
     "allPlatforms": "All Platforms",
+    "apiDocs": "Open API",
     "about": "About",
     "settings": "Settings",
     "heat": "Heat {value}",

@@ -10,6 +10,7 @@
   "common": {
     "home": "首页",
     "allPlatforms": "全部平台",
+    "apiDocs": "开放 API",
     "about": "关于我们",
     "settings": "设置",
     "heat": "热度 {value}",

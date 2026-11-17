@@ -11,25 +11,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: SITE_URL,
       lastModified,
       changeFrequency: 'hourly',
-      priority: 1,
     },
     {
       url: `${SITE_URL}/all`,
       lastModified,
       changeFrequency: 'hourly',
-      priority: 0.9,
     },
     {
       url: `${SITE_URL}/about`,
-      lastModified,
       changeFrequency: 'monthly',
-      priority: 0.4,
+    },
+    {
+      url: `${SITE_URL}/api-docs`,
+      changeFrequency: 'monthly',
     },
     ...PLATFORMS.map((platform) => ({
       url: `${SITE_URL}/platform/${platform.code}`,
       lastModified,
       changeFrequency: 'hourly' as const,
-      priority: 0.8,
     })),
   ];
 }
