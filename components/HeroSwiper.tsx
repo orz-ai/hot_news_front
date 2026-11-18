@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -12,7 +12,6 @@ import { usePlatformI18n } from "@/lib/platform-i18n";
 
 import "swiper/css";
 import "swiper/css/pagination";
-import "swiper/css/navigation";
 
 interface FeaturedNews {
   id: string;
@@ -206,12 +205,11 @@ export default function HeroSwiper() {
     <div className="relative">
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="relative">
         <Swiper
-          modules={[Autoplay, Pagination, Navigation]}
+          modules={[Autoplay, Pagination]}
           spaceBetween={30}
           centeredSlides
           autoplay={{ delay: 4000, disableOnInteraction: false }}
-          pagination={{ clickable: false, dynamicBullets: false }}
-          navigation
+          pagination={{ clickable: true, dynamicBullets: false }}
           loop
           className="hero-swiper h-96 rounded-3xl overflow-hidden"
         >
@@ -262,7 +260,10 @@ export default function HeroSwiper() {
             bottom: 20px !important;
           }
           .hero-swiper .swiper-pagination-bullet {
-            background: rgba(255, 255, 255, 0.5) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(59, 130, 246, 0.45);
+            box-shadow: 0 1px 4px rgba(31, 41, 55, 0.2);
+            opacity: 1 !important;
             backdrop-filter: blur(8px);
             width: 12px !important;
             height: 12px !important;
@@ -270,33 +271,6 @@ export default function HeroSwiper() {
           .hero-swiper .swiper-pagination-bullet-active {
             background: linear-gradient(45deg, #3b82f6, #8b5cf6) !important;
             box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-          }
-          .hero-swiper .swiper-button-next,
-          .hero-swiper .swiper-button-prev {
-            color: rgba(255, 255, 255, 0.8) !important;
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(8px);
-            width: 48px !important;
-            height: 48px !important;
-            border-radius: 50%;
-            margin-top: -24px !important;
-            transition: all 0.3s ease;
-          }
-          .hero-swiper .swiper-button-next:hover,
-          .hero-swiper .swiper-button-prev:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            transform: scale(1.1);
-          }
-          .hero-swiper .swiper-button-next::after,
-          .hero-swiper .swiper-button-prev::after {
-            font-size: 18px !important;
-            font-weight: bold;
-          }
-          @media (max-width: 768px) {
-            .hero-swiper .swiper-button-next,
-            .hero-swiper .swiper-button-prev {
-              display: none !important;
-            }
           }
         `}</style>
       </motion.div>

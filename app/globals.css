@@ -69,6 +69,24 @@ body {
 }
 
 /* 动画效果 */
+@keyframes newsMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--news-marquee-distance));
+  }
+}
+
+.animate-news-marquee {
+  animation: newsMarquee var(--news-marquee-duration, 6s) linear infinite alternate;
+  animation-play-state: paused;
+}
+
+.group:hover .animate-news-marquee {
+  animation-play-state: running;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
