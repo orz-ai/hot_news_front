@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { PLATFORMS } from "../../constants/platforms";
 import PlatformCard from "../../components/PlatformCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { fetchAllPlatformsData } from "../../utils/api";
+import { fetchAllPlatformsData, getLocalDateString } from "../../utils/api";
 import { PlatformType, TrendingItem } from "../../types";
 import { usePlatformI18n } from "@/lib/platform-i18n";
 
@@ -20,7 +20,7 @@ export default function AllPlatformsClient({ initialTrendingData = {} }: AllPlat
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(Object.keys(initialTrendingData).length === 0);
   const [trendingData, setTrendingData] = useState<Record<PlatformType, TrendingItem[]>>(initialTrendingData as Record<PlatformType, TrendingItem[]>);
-  const [currentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [currentDate] = useState<string>(() => getLocalDateString());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('allPlatforms');
   const { translatedPlatforms } = usePlatformI18n();
