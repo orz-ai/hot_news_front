@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { PlatformInfo, TrendingItem as TrendingItemType } from '../types';
 import { fetchMultiPlatformData } from '../utils/api';
 import LoadingSpinner from './LoadingSpinner';
+import LocalTime from './LocalTime';
 
 interface PlatformCardProps {
   platform: PlatformInfo;
@@ -59,7 +60,7 @@ export default function PlatformCard({ platform, index, trendingItems: propTrend
           <div className="flex items-center justify-between mb-3 gap-3">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">{platform.name}</h3>
             <span className="text-xs px-2.5 py-1 rounded-full flex items-center whitespace-nowrap" style={{ backgroundColor: `${platform.color}15` || '#f1f5f9', color: platform.color || '#64748b' }}>
-              {trendingItems.length > 0 && trendingItems[0].publish_time ? trendingItems[0].publish_time.split(' ')[1] : platform.updateFrequency}
+              {trendingItems.length > 0 && trendingItems[0].publish_time ? <LocalTime value={trendingItems[0].publish_time} timeOnly /> : platform.updateFrequency}
             </span>
           </div>
 

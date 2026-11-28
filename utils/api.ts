@@ -4,14 +4,10 @@ import { ApiResponse, PlatformType, AnalysisResponse, PlatformComparisonResponse
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://news.orz.ai/api/v1/dailynews/';
 
 /**
- * Returns the calendar date in the browser/device's local timezone.
- * `toISOString()` is deliberately avoided because it formats in UTC.
+ * Returns the UTC calendar date used by the backend.
  */
-export function getLocalDateString(date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+export function getUtcDateString(date = new Date()): string {
+  return date.toISOString().slice(0, 10);
 }
 
 /**
@@ -129,7 +125,7 @@ export async function fetchAnalysisData(analysisType: string = 'main'): Promise<
     console.error(`Error fetching analysis data:`, error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       analysis_type: analysisType,
       hot_keywords: [],
       topic_distribution: [],
@@ -153,7 +149,7 @@ export async function fetchPlatformComparisonData(): Promise<PlatformComparisonR
     console.error(`Error fetching platform comparison data:`, error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       analysis_type: 'platform',
       platform_stats: {},
       platform_rankings: [],
@@ -185,7 +181,7 @@ export async function fetchCrossPlatformData(): Promise<CrossPlatformResponse> {
     console.error(`Error fetching cross-platform data:`, error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       analysis_type: 'cross_platform',
       common_topics: [],
       updated_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
@@ -207,7 +203,7 @@ export async function fetchDataVisualization(): Promise<DataVisualizationRespons
     console.error(`Error fetching data visualization:`, error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       analysis_type: 'data_visualization',
       topic_heat_distribution: {
         keywords: [],
@@ -234,7 +230,7 @@ export async function fetchTrendForecast(timeRange: string = '24h'): Promise<Tre
     console.error('Error fetching trend forecast data:', error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       analysis_type: 'trend_forecast',
       time_range: timeRange,
       description: '',
@@ -368,7 +364,7 @@ export async function fetchKeywordCloud(options: {
     console.error(`Error fetching keyword cloud data:`, error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       analysis_type: 'keyword_cloud',
       keyword_clouds: {
         all: []
@@ -387,7 +383,7 @@ export async function fetchHotSummary(): Promise<HotSummaryResponse> {
     console.error('Error fetching hot summary:', error);
     return {
       status: 'error',
-      date: getLocalDateString(),
+      date: getUtcDateString(),
       summary: '',
       previous_summary_date: null,
       news_count: 0,

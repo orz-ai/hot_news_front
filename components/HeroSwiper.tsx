@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { fetchMultiPlatformData } from "../utils/api";
 import { PlatformType, TrendingItem } from "../types";
 import { usePlatformI18n } from "@/lib/platform-i18n";
+import { formatLocalTime } from './LocalTime';
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -82,7 +83,7 @@ export default function HeroSwiper() {
 
     const time = item.publish_time || item.pubDate;
     return time
-      ? `来源：${platformName} · 更新时间：${time}`
+      ? `来源：${platformName} · 更新时间：${formatLocalTime(time)}`
       : `来源：${platformName}，点击查看原始内容。`;
   };
 

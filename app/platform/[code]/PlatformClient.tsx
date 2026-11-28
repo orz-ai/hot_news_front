@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { TrendingItem as TrendingItemType, PlatformType } from "../../../types";
 import TrendingItem from "../../../components/TrendingItem";
 import LoadingSpinner from "../../../components/LoadingSpinner";
+import LocalTime from "../../../components/LocalTime";
 import { fetchMultiPlatformData } from "../../../utils/api";
 import { usePlatformI18n } from "@/lib/platform-i18n";
 
@@ -25,12 +26,6 @@ export default function PlatformClient({ platformCode, initialTrendingData = [] 
   const [error, setError] = useState<string | null>(null);
 
   const platformInfo = getPlatformInfoByCode(platformCode);
-
-  const formatTime = (timeString?: string) => {
-    if (!timeString) return null;
-    const parts = timeString.split(' ');
-    return parts.length > 1 ? parts[1] : timeString;
-  };
 
   const loadData = async () => {
     setLoading(true);
@@ -88,7 +83,7 @@ export default function PlatformClient({ platformCode, initialTrendingData = [] 
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1 ml-4">
             <span className="font-medium">{t('updateFrequency')}</span>
-            <span>{trendingData.length > 0 && trendingData[0].publish_time ? formatTime(trendingData[0].publish_time) : platformInfo.updateFrequency}</span>
+            <span>{trendingData.length > 0 && trendingData[0].publish_time ? <LocalTime value={trendingData[0].publish_time} timeOnly /> : platformInfo.updateFrequency}</span>
           </div>
         </div>
       </motion.div>

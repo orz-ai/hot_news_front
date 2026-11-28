@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import LoadingSpinner from './LoadingSpinner';
+import LocalTime from './LocalTime';
 import { fetchHotSummary } from '@/utils/api';
 import { HotSummaryResponse } from '@/types';
 import { usePlatformI18n } from '@/lib/platform-i18n';
@@ -137,20 +138,6 @@ export default function HotSummary({ initialData = null }: HotSummaryProps) {
     return data.platforms.map((code) => getPlatformInfoByCode(code)?.name || code);
   }, [data?.platforms, getPlatformInfoByCode]);
 
-  const formattedGeneratedAt = useMemo(() => {
-    if (!data?.generated_at) return '';
-    const date = new Date(data.generated_at);
-    if (Number.isNaN(date.getTime())) return data.generated_at;
-
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  }, [data?.generated_at, locale]);
-
   return (
     <section className="mb-16">
       <div className="overflow-hidden rounded-3xl border border-primary-100/70 bg-gradient-to-br from-primary-50 via-white to-purple-50 shadow-card dark:border-primary-900/40 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -204,7 +191,7 @@ export default function HotSummary({ initialData = null }: HotSummaryProps) {
               <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-2xl bg-white/80 p-4 shadow-sm dark:bg-gray-800/70">
                   <div className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('cards.generatedAt')}</div>
-                  <div className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{formattedGeneratedAt || data.generated_at}</div>
+                  <div className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{data.generated_at && <LocalTime value={data.generated_at} locale={locale} />}</div>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-4 shadow-sm dark:bg-gray-800/70">
                   <div className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('cards.platforms')}</div>

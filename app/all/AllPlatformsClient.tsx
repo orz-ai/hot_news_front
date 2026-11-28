@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { PLATFORMS } from "../../constants/platforms";
 import PlatformCard from "../../components/PlatformCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { fetchAllPlatformsData, getLocalDateString } from "../../utils/api";
+import { fetchAllPlatformsData } from "../../utils/api";
 import { PlatformType, TrendingItem } from "../../types";
 import { usePlatformI18n } from "@/lib/platform-i18n";
 
@@ -20,7 +20,6 @@ export default function AllPlatformsClient({ initialTrendingData = {} }: AllPlat
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(Object.keys(initialTrendingData).length === 0);
   const [trendingData, setTrendingData] = useState<Record<PlatformType, TrendingItem[]>>(initialTrendingData as Record<PlatformType, TrendingItem[]>);
-  const [currentDate] = useState<string>(() => getLocalDateString());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('allPlatforms');
   const { translatedPlatforms } = usePlatformI18n();
@@ -39,7 +38,7 @@ export default function AllPlatformsClient({ initialTrendingData = {} }: AllPlat
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetchAllPlatformsData(currentDate);
+        const response = await fetchAllPlatformsData(new Date().toISOString().slice(0, 10));
         if (response.status === '200') {
           setTrendingData(response.data);
         }
@@ -48,7 +47,7 @@ export default function AllPlatformsClient({ initialTrendingData = {} }: AllPlat
       }
     };
     fetchData();
-  }, [currentDate]);
+  }, []);
 
   const allCategories = Array.from(new Set(translatedPlatforms.flatMap(platform => platform.contentType))).sort();
 

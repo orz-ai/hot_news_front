@@ -25,8 +25,10 @@ const LOCALE_MESSAGES: Record<Locale, AbstractIntlMessages> = {
 
 export default function LocaleProvider({ children }: LocaleProviderProps) {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
+  const [timeZone, setTimeZone] = useState('UTC');
 
   useEffect(() => {
+    setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
     const savedLocale = typeof window !== 'undefined' ? localStorage.getItem(LOCALE_STORAGE_KEY) : null;
     if (savedLocale && isSupportedLocale(savedLocale)) {
       setLocale(savedLocale);
@@ -50,7 +52,7 @@ export default function LocaleProvider({ children }: LocaleProviderProps) {
   const messages = useMemo(() => LOCALE_MESSAGES[locale] ?? LOCALE_MESSAGES[DEFAULT_LOCALE], [locale]);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Shanghai">
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
       {children}
     </NextIntlClientProvider>
   );

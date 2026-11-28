@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { TrendingItem as TrendingItemType } from '../types';
+import LocalTime from './LocalTime';
 
 interface TrendingItemProps {
   item: TrendingItemType;
@@ -13,11 +14,6 @@ interface TrendingItemProps {
 export default function TrendingItem({ item, index, platformColor = '#3b76ea' }: TrendingItemProps) {
   const t = useTranslations('trendingItem');
 
-  const formatTime = (timeString?: string) => {
-    if (!timeString) return t('latest');
-    const parts = timeString.split(' ');
-    return parts.length > 1 ? parts[1] : timeString;
-  };
 
   if (!item.title || item.title.trim() === '') {
     return null;
@@ -53,7 +49,7 @@ export default function TrendingItem({ item, index, platformColor = '#3b76ea' }:
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {formatTime(item.publish_time || item.pubDate)}
+                {item.publish_time || item.pubDate ? <LocalTime value={(item.publish_time || item.pubDate)!} timeOnly /> : t('latest')}
               </span>
             </div>
           </div>
